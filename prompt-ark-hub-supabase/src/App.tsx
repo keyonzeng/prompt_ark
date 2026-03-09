@@ -124,6 +124,13 @@ function AppContent() {
 
   const totalPages = Math.ceil(filteredPrompts.length / PAGE_SIZE)
 
+  // Extract variables from content (e.g., {{topic}}, {{lang:EN|ZH}})
+  const extractVariables = (content: string): string[] => {
+    const vars = (content || '').match(/\{\{([^}]+)\}\}/g) || []
+    const uniqueVars = [...new Set(vars.map(v => v.replace(/\{\{|\}\}/g, '').split(/[:=|]/)[0].trim()))]
+    return uniqueVars
+  }
+
   // Handle vote - directly update prompts table
   async function handleVote(type: 'up' | 'down') {
     if (!selectedPrompt) return
@@ -176,6 +183,9 @@ function AppContent() {
       p.id === selectedPrompt.id ? updated : p
     ))
 
+    // Extract variables from content
+    const uniqueVars = extractVariables(selectedPrompt.content || '')
+
     // Send to Prompt Ark extension
     const payload = {
       format: 'prompt-ark',
@@ -185,6 +195,7 @@ function AppContent() {
         content: selectedPrompt.content,
         category: selectedPrompt.category,
         tags: selectedPrompt.tags,
+        variables: uniqueVars.map(v => ({ name: v }))
       }]
     }
     window.postMessage({ type: 'PROMPT_ARK_IMPORT', payload }, '*')
@@ -216,6 +227,9 @@ function AppContent() {
       return
     }
 
+    // Extract variables from content
+    const uniqueVars = extractVariables(selectedPrompt.content || '')
+
     const payload = {
       format: 'prompt-ark',
       version: 1,
@@ -224,6 +238,7 @@ function AppContent() {
         content: selectedPrompt.content,
         category: selectedPrompt.category || '',
         tags: [...(selectedPrompt.tags || []), 'forked'],
+        variables: uniqueVars.map(v => ({ name: v }))
       }],
     }
 
