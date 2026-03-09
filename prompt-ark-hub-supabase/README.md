@@ -1,73 +1,55 @@
-# React + TypeScript + Vite
+<p align="center">
+  <img src="../icons/icon128.png" width="80" />
+</p>
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+<h1 align="center">Prompt Ark Hub</h1>
 
-Currently, two official plugins are available:
+<p align="center">
+  <b>Discover, share, and vote on the best AI prompts.</b> A community-driven prompt registry that works seamlessly with the Prompt Ark browser extension.
+</p>
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+<p align="center">
+  <a href="README_zh.md">📖 中文</a>
+</p>
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 😫 The Problem
 
-## Expanding the ESLint configuration
+You found an amazing prompt on Reddit, saved it to your notes, and... never used it again. Your teammates keep asking for the same prompts. The best prompts are scattered everywhere.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+**Prompt Ark Hub fixes this.**
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## ✨ What It Does (in 10 seconds)
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+| You want to... | Prompt Ark Hub does... |
+|---|---|
+| **Find prompts** | 🔍 Search by keywords, filter by category |
+| **Discover trending** | 🔥 See what the community loves |
+| **Preview instantly** | 📖 Beautiful markdown rendering |
+| **Use in your chat** | ⚡ One-click install to Prompt Ark extension |
+| **Save for later** | 🍴 Fork any prompt to your collection |
+| **Contribute** | 🌟 Share your best prompts with the community |
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 🔌 Works with Your Prompt Ark Extension
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+The Hub is designed to work perfectly with your Prompt Ark extension:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+1. **Browse** → Find a great prompt on the Hub
+2. **Install** → Click **Add to Prompt Ark** → It goes straight to your extension
+3. **Use** → Open ChatGPT/Claude/Gemini → Select the prompt → Auto-injected into chat
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Your extension and the Hub are connected. Your saved prompts can be shared back to the Hub too.
+
+## 🛠 For Developers
+
+- **Frontend**: React 19 + TypeScript + Vite
+- **Backend**: Supabase (PostgreSQL + Auth)
+- **Styling**: CSS Variables + Custom Components
+- **Markdown**: react-markdown + remark-gfm
+
+---
+
+## 📄 License
+
+MIT © 2026 Prompt Ark Team
