@@ -1,4 +1,6 @@
 import React, { useEffect, useRef } from 'react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import type { Prompt } from '../lib/supabase'
 
 interface DetailModalProps {
@@ -96,19 +98,61 @@ export function DetailModal({ prompt, onClose, onCopyLink, onFork, onInstall, ch
     return <span key="score" className={`hub-card-score ${scoreClass}`}>💎 {prompt.quality_score}</span>
   }
 
-  // Render content with markdown and variable highlighting
-  const renderContent = (content: string) => {
-    let html = content || 'No content available.'
-    html = highlightVariables(html)
-    html = html
-      .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-      .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.+?)\*/g, '<em>$1</em>')
-      .replace(/`([^`]+)`/g, '<code>$1</code>')
-      .replace(/\n/g, '<br>')
-    return `<div>${html}</div>`
+  // Variable highlighting helper
+  const renderVariableHighlight = (text: React.ReactNode): React.ReactNode => {
+    if (typeof text !== 'string') return text
+    
+    const parts = text.split(/(\{\{[^}]+\}\})/g)
+    if (parts.length === 1) return text
+    
+    return (
+      <>
+        {parts.map((part, i) => {
+          if (part.match(/^\{\{[^}]+\}\}$/)) {
+            return <span key={i} className="hub-var-highlight">{part}</span>
+          }
+          return part
+        })}
+      </>
+    )
+  }
+
+  // Variable highlighting component for react-markdown
+  const MarkdownComponents = {
+    p: ({ children, ...props }: React.HTMLProps<HTMLParagraphElement>) => (
+      <p {...props}>{renderVariableHighlight(children)}</p>
+    ),
+    span: ({ children, ...props }: React.HTMLProps<HTMLSpanElement>) => (
+      <span {...props}>{renderVariableHighlight(children)}</span>
+    ),
+    li: ({ children, ...props }: React.HTMLProps<HTMLLIElement>) => (
+      <li {...props}>{renderVariableHighlight(children)}</li>
+    ),
+    td: ({ children, ...props }: React.HTMLProps<HTMLTableDataCellElement>) => (
+      <td {...props}>{renderVariableHighlight(children)}</td>
+    ),
+    th: ({ children, ...props }: React.HTMLProps<HTMLTableHeaderCellElement>) => (
+      <th {...props}>{renderVariableHighlight(children)}</th>
+    ),
+    code: ({ className, children, ...props }: React.HTMLProps<HTMLElement> & { className?: string }) => {
+      const match = /language-(\w+)/.exec(className || '')
+      const isInline = !match && !className
+      
+      if (isInline) {
+        const codeContent = String(children).replace(/\n$/, '')
+        return (
+          <code className={className} {...props}>
+            {renderVariableHighlight(codeContent)}
+          </code>
+        )
+      }
+      
+      return (
+        <code className={className} {...props}>
+          {children}
+        </code>
+      )
+    }
   }
 
   // Render pack items list
@@ -174,7 +218,14 @@ export function DetailModal({ prompt, onClose, onCopyLink, onFork, onInstall, ch
                 </div>
               )}
               
-              <div className="hub-modal-content" dangerouslySetInnerHTML={{ __html: renderContent(prompt.content || '') }} />
+              <div className="hub-modal-content">
+                <ReactMarkdown 
+                  remarkPlugins={[remarkGfm]} 
+                  components={MarkdownComponents}
+                >
+                  {prompt.content || 'No content available.'}
+                </ReactMarkdown>
+              </div>
             </>
           )}
         </div>
