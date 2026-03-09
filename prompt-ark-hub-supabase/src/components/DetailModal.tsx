@@ -10,6 +10,13 @@ interface DetailModalProps {
   children?: React.ReactNode
 }
 
+interface PackItem {
+  title?: string
+  content?: string
+  category?: string
+  tags?: string[]
+}
+
 export function DetailModal({ prompt, onClose, onCopyLink, onFork, onInstall, children }: DetailModalProps) {
   const modalRef = useRef<HTMLDivElement>(null)
 
@@ -35,7 +42,20 @@ export function DetailModal({ prompt, onClose, onCopyLink, onFork, onInstall, ch
 
   if (!prompt) return null
 
-  // Parse variables from content
+  // Check if this is a pack
+  const isPack = prompt.type === 'pack'
+  
+  // Parse pack items from content if type is pack
+  const packItems: PackItem[] = isPack ? (() => {
+    try {
+      const parsed = JSON.parse(prompt.content || '[]')
+      return Array.isArray(parsed) ? parsed : []
+    } catch {
+      return []
+    }
+  })() : []
+
+  // Parse variables from content (only for single prompt)
   const parseVariables = (content: string) => {
     const vars = content.match(/\{\{([^}]+)\}\}/g) || []
     const uniqueVars = [...new Set(vars.map(v => 
@@ -44,7 +64,7 @@ export function DetailModal({ prompt, onClose, onCopyLink, onFork, onInstall, ch
     return uniqueVars
   }
 
-  const variables = parseVariables(prompt.content || '')
+  const variables = !isPack ? parseVariables(prompt.content || '') : []
   const hasVariables = variables.length > 0
 
   // Variable highlighting
@@ -59,6 +79,9 @@ export function DetailModal({ prompt, onClose, onCopyLink, onFork, onInstall, ch
     if (prompt.category) items.push(<span key="cat" className="hub-modal-meta-item">📁 {prompt.category}</span>)
     if (prompt.variable_count) items.push(<span key="var" className="hub-modal-meta-item">🔤 {prompt.variable_count} variable{prompt.variable_count > 1 ? 's' : ''}</span>)
     if (prompt.token_estimate) items.push(<span key="token" className="hub-modal-meta-item">📏 ~{prompt.token_estimate} tokens</span>)
+    if (isPack && packItems.length > 0) {
+      items.push(<span key="pack" className="hub-modal-meta-item">📦 {packItems.length} prompt{packItems.length > 1 ? 's' : ''}</span>)
+    }
     return items
   }
 
@@ -74,8 +97,8 @@ export function DetailModal({ prompt, onClose, onCopyLink, onFork, onInstall, ch
   }
 
   // Render content with markdown and variable highlighting
-  const renderContent = () => {
-    let html = prompt.content || 'No content available.'
+  const renderContent = (content: string) => {
+    let html = content || 'No content available.'
     html = highlightVariables(html)
     html = html
       .replace(/^### (.+)$/gm, '<h3>$1</h3>')
@@ -86,6 +109,29 @@ export function DetailModal({ prompt, onClose, onCopyLink, onFork, onInstall, ch
       .replace(/`([^`]+)`/g, '<code>$1</code>')
       .replace(/\n/g, '<br>')
     return `<div>${html}</div>`
+  }
+
+  // Render pack items list
+  const renderPackItems = () => {
+    if (!isPack || packItems.length === 0) return null
+
+    return (
+      <div className="hub-pack-list">
+        <p style={{ marginBottom: '12px', color: 'var(--text-secondary)' }}>
+          This pack contains <strong>{packItems.length}</strong> prompts:
+        </p>
+        {packItems.map((item, idx) => (
+          <div key={idx} className="hub-pack-item">
+            <div className="hub-pack-item-title">
+              {item.title || `Prompt ${idx + 1}`}
+            </div>
+            <div className="hub-pack-item-preview">
+              {(item.content || '').substring(0, 100)}...
+            </div>
+          </div>
+        ))}
+      </div>
+    )
   }
 
   return (
@@ -111,18 +157,26 @@ export function DetailModal({ prompt, onClose, onCopyLink, onFork, onInstall, ch
             {renderLanguage()}
           </div>
           
-          {hasVariables && (
-            <div className="hub-var-panel">
-              <div className="hub-var-panel-title">📝 Variables ({variables.length})</div>
-              <div className="hub-var-list">
-                {variables.map((v, i) => (
-                  <span key={i} className="hub-var-chip">{`{{${v}}}`}</span>
-                ))}
-              </div>
-            </div>
+          {/* Pack view: show items list */}
+          {isPack ? (
+            renderPackItems()
+          ) : (
+            <>
+              {/* Single prompt view: show variables and content */}
+              {hasVariables && (
+                <div className="hub-var-panel">
+                  <div className="hub-var-panel-title">📝 Variables ({variables.length})</div>
+                  <div className="hub-var-list">
+                    {variables.map((v, i) => (
+                      <span key={i} className="hub-var-chip">{`{{${v}}}`}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              <div className="hub-modal-content" dangerouslySetInnerHTML={{ __html: renderContent(prompt.content || '') }} />
+            </>
           )}
-          
-          <div className="hub-modal-content" dangerouslySetInnerHTML={{ __html: renderContent() }} />
         </div>
         
         <div className="hub-modal-footer">
@@ -133,9 +187,11 @@ export function DetailModal({ prompt, onClose, onCopyLink, onFork, onInstall, ch
             <button className="hub-action-btn" id="copyLinkBtn" title="Copy share link" onClick={onCopyLink}>
               🔗 Copy Link
             </button>
-            <button className="hub-action-btn" id="forkBtn" title="Fork this prompt to your collection" onClick={onFork}>
-              🍴 Fork
-            </button>
+            {!isPack && (
+              <button className="hub-action-btn" id="forkBtn" title="Fork this prompt to your collection" onClick={onFork}>
+                🍴 Fork
+              </button>
+            )}
             <button className="hub-install-btn" id="installBtn" title="Add to Prompt Ark" onClick={onInstall}>
               ⚡ Add to Prompt Ark
             </button>

@@ -183,21 +183,47 @@ function AppContent() {
       p.id === selectedPrompt.id ? updated : p
     ))
 
-    // Extract variables from content
-    const uniqueVars = extractVariables(selectedPrompt.content || '')
+    // Check if this is a pack
+    const isPack = selectedPrompt.type === 'pack'
 
-    // Send to Prompt Ark extension
-    const payload = {
-      format: 'prompt-ark',
-      version: 1,
-      prompts: [{
-        title: selectedPrompt.title,
-        content: selectedPrompt.content,
-        category: selectedPrompt.category,
-        tags: selectedPrompt.tags,
-        variables: uniqueVars.map(v => ({ name: v }))
-      }]
+    let payload
+
+    if (isPack) {
+      // Pack: parse content as JSON array
+      try {
+        const packItems = JSON.parse(selectedPrompt.content || '[]')
+        payload = {
+          format: 'prompt-ark',
+          version: 1,
+          prompts: packItems.map((item: any) => ({
+            title: item.title,
+            content: item.content,
+            category: item.category || '',
+            tags: item.tags || [],
+            variables: []
+          })),
+          pack: { title: selectedPrompt.title, count: packItems.length }
+        }
+      } catch {
+        showToast('❌ Failed to parse pack data')
+        return
+      }
+    } else {
+      // Single prompt: extract variables
+      const uniqueVars = extractVariables(selectedPrompt.content || '')
+      payload = {
+        format: 'prompt-ark',
+        version: 1,
+        prompts: [{
+          title: selectedPrompt.title,
+          content: selectedPrompt.content,
+          category: selectedPrompt.category,
+          tags: selectedPrompt.tags,
+          variables: uniqueVars.map(v => ({ name: v }))
+        }]
+      }
     }
+
     window.postMessage({ type: 'PROMPT_ARK_IMPORT', payload }, '*')
     showToast('✅ Prompt sent to Prompt Ark!')
 
@@ -219,7 +245,7 @@ function AppContent() {
     })
   }
 
-  // Handle fork
+  // Handle fork (only for single prompts, not packs)
   function handleFork() {
     if (!selectedPrompt) return
     if (!selectedPrompt.content) {
