@@ -560,6 +560,41 @@ body::after {
   color: var(--text-secondary);
 }
 
+.hub-modal-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 14px;
+}
+
+.hub-modal-content th, .hub-modal-content td {
+  padding: 10px 12px;
+  text-align: left;
+  border: 1px solid var(--border);
+}
+
+.hub-modal-content th {
+  background: var(--bg-surface);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.hub-modal-content tr:nth-child(even) {
+  background: rgba(128, 128, 128, 0.05);
+}
+
+.hub-modal-content li {
+  margin: 4px 0;
+  line-height: 1.6;
+}
+
+.hub-modal-content ul li {
+  list-style-type: disc;
+}
+
+.hub-modal-content ol li {
+  list-style-type: decimal;
+}
 .hub-modal-content ul, .hub-modal-content ol {
   padding-left: 20px;
   margin: 8px 0;
