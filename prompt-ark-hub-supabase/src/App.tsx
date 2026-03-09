@@ -8,14 +8,12 @@ import {
   PromptGrid,
   DetailModal,
   Voting,
-  InstallButton,
-    ToastProvider,
+  ToastProvider,
   useToast,
   Loading,
   Pagination,
 } from './components'
 
-type Category = string // Dynamic - any category from data
 type SortOption = 'trending' | 'newest' | 'topRated' | 'quality'
 
 const PAGE_SIZE = 12
@@ -28,8 +26,6 @@ function AppContent() {
   const [sort, setSort] = useState<SortOption>('trending')
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null)
-  const [user, setUser] = useState<any>(null)
-  const [userVotes, setUserVotes] = useState<Record<string, 'up' | 'down'>>({})
   const { showToast } = useToast()
 
   // Get unique categories from prompts
@@ -39,34 +35,18 @@ function AppContent() {
     return ['all', ...Array.from(cats).sort()]
   }, [prompts])
 
-  // Load prompts
+  // Load prompts on mount
   useEffect(() => {
     loadPrompts()
-    checkAuth()
-    
-    // Check for ?gist= URL parameter
-    const params = new URLSearchParams(window.location.search)
-    const gistId = params.get('gist')
-    if (gistId) {
-      // Will open after prompts are loaded
-      const timer = setInterval(() => {
-        const found = prompts.find(p => (p as any).gistId === gistId)
-        if (found) {
-          setSelectedPrompt(found)
-          clearInterval(timer)
-        }
-      }, 500)
-      return () => clearInterval(timer)
-    }
   }, [])
 
-  // Open detail when gist param present and prompts loaded
+  // Open detail when id param present in URL
   useEffect(() => {
     if (prompts.length === 0) return
     const params = new URLSearchParams(window.location.search)
-    const gistId = params.get('gist')
-    if (gistId) {
-      const found = prompts.find(p => (p as any).gistId === gistId || p.id === gistId)
+    const id = params.get('id')
+    if (id) {
+      const found = prompts.find(p => p.id === id)
       if (found) {
         setSelectedPrompt(found)
       }
@@ -78,36 +58,18 @@ function AppContent() {
     const { data, error } = await supabase
       .from('prompts')
       .select('*')
-      .order('created_at', { ascending: false })
-
+    
     if (error) {
       console.error('Error loading prompts:', error)
       showToast('Failed to load prompts')
     } else {
-      setPrompts(data || [])
+      // Sort by created_at descending
+      const sorted = (data || []).sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      )
+      setPrompts(sorted)
     }
     setLoading(false)
-  }
-
-  async function checkAuth() {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (session?.user) {
-      setUser(session.user)
-      loadUserVotes(session.user.id)
-    }
-  }
-
-  async function loadUserVotes(userId: string) {
-    const { data } = await supabase
-      .from('votes')
-      .select('prompt_id, vote_type')
-      .eq('user_id', userId)
-    
-    if (data) {
-      const votes: Record<string, 'up' | 'down'> = {}
-      data.forEach(v => { votes[v.prompt_id] = v.vote_type })
-      setUserVotes(votes)
-    }
   }
 
   // Reset page when filters change
@@ -119,12 +81,12 @@ function AppContent() {
   const filteredPrompts = useMemo(() => {
     let list = [...prompts]
 
-    // Category filter
+    // Category filter (case-insensitive)
     if (category !== 'all') {
       list = list.filter(p => p.category?.toLowerCase() === category.toLowerCase())
     }
 
-    // Search filter
+    // Search filter (fuzzy: title, category, author, tags)
     if (search.trim()) {
       const q = search.toLowerCase()
       list = list.filter(p => 
@@ -162,52 +124,59 @@ function AppContent() {
 
   const totalPages = Math.ceil(filteredPrompts.length / PAGE_SIZE)
 
-  // Handle vote
+  // Handle vote - directly update prompts table
   async function handleVote(type: 'up' | 'down') {
-    if (!user) {
-      showToast('Please sign in to vote')
-      return
-    }
     if (!selectedPrompt) return
 
-    const currentVote = userVotes[selectedPrompt.id]
-    const newVoteType = currentVote === type ? null : type
+    const currentUpvotes = selectedPrompt.upvotes || 0
+    const currentDownvotes = selectedPrompt.downvotes || 0
 
     // Optimistic update
-    const updated = { ...selectedPrompt }
-    if (currentVote === 'up') updated.upvotes = (updated.upvotes || 1) - 1
-    if (currentVote === 'down') updated.downvotes = (updated.downvotes || 1) - 1
-    if (newVoteType === 'up') updated.upvotes = (updated.upvotes || 0) + 1
-    if (newVoteType === 'down') updated.downvotes = (updated.downvotes || 0) + 1
+    const updated = { 
+      ...selectedPrompt,
+      upvotes: type === 'up' ? currentUpvotes + 1 : currentUpvotes,
+      downvotes: type === 'down' ? currentDownvotes + 1 : currentDownvotes
+    }
     setSelectedPrompt(updated)
 
-    // Update local votes
-    const newVotes = { ...userVotes }
-    if (newVoteType) {
-      newVotes[selectedPrompt.id] = newVoteType
-    } else {
-      delete newVotes[selectedPrompt.id]
-    }
-    setUserVotes(newVotes)
+    // Update local prompts list
+    setPrompts(prompts.map(p => 
+      p.id === selectedPrompt.id ? updated : p
+    ))
 
     // Save to Supabase
-    if (newVoteType) {
-      await supabase.from('votes').upsert({
-        prompt_id: selectedPrompt.id,
-        user_id: user.id,
-        vote_type: newVoteType,
-      })
+    if (type === 'up') {
+      await supabase
+        .from('prompts')
+        .update({ upvotes: currentUpvotes + 1 })
+        .eq('id', selectedPrompt.id)
     } else {
-      await supabase.from('votes').delete()
-        .eq('prompt_id', selectedPrompt.id)
-        .eq('user_id', user.id)
+      await supabase
+        .from('prompts')
+        .update({ downvotes: currentDownvotes + 1 })
+        .eq('id', selectedPrompt.id)
     }
   }
 
-  // Handle install
-  function handleInstall() {
+  // Handle install - directly update prompts table
+  async function handleInstall() {
     if (!selectedPrompt) return
 
+    const currentInstallCount = selectedPrompt.install_count || 0
+
+    // Optimistic update
+    const updated = { 
+      ...selectedPrompt,
+      install_count: currentInstallCount + 1
+    }
+    setSelectedPrompt(updated)
+
+    // Update local prompts list
+    setPrompts(prompts.map(p => 
+      p.id === selectedPrompt.id ? updated : p
+    ))
+
+    // Send to Prompt Ark extension
     const payload = {
       format: 'prompt-ark',
       version: 1,
@@ -218,15 +187,20 @@ function AppContent() {
         tags: selectedPrompt.tags,
       }]
     }
-
     window.postMessage({ type: 'PROMPT_ARK_IMPORT', payload }, '*')
     showToast('✅ Prompt sent to Prompt Ark!')
+
+    // Save to Supabase
+    await supabase
+      .from('prompts')
+      .update({ install_count: currentInstallCount + 1 })
+      .eq('id', selectedPrompt.id)
   }
 
   // Handle copy link
   function handleCopyLink() {
     if (!selectedPrompt) return
-    const shareUrl = `${window.location.origin}${window.location.pathname}?gist=${selectedPrompt.id}`
+    const shareUrl = `${window.location.origin}${window.location.pathname}?id=${selectedPrompt.id}`
     navigator.clipboard.writeText(shareUrl).then(() => {
       showToast('✅ Share link copied!')
     }).catch(() => {
@@ -256,7 +230,6 @@ function AppContent() {
     window.postMessage({ type: 'PROMPT_ARK_IMPORT', payload }, '*')
     showToast(`🍴 Forked prompt to Prompt Ark!`)
   }
-
 
   const handleCategoryChange = useCallback((cat: string) => {
     setCategory(cat)
@@ -318,11 +291,9 @@ function AppContent() {
             <Voting 
               upvotes={selectedPrompt.upvotes || 0}
               downvotes={selectedPrompt.downvotes || 0}
-              userVote={userVotes[selectedPrompt.id] || null}
               onVote={handleVote}
-              disabled={!user}
             />
-            </>
+          </>
         )}
       </DetailModal>
     </div>
