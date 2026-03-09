@@ -570,7 +570,7 @@ body::after {
 .hub-modal-content th, .hub-modal-content td {
   padding: 10px 12px;
   text-align: left;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .hub-modal-content th {
@@ -580,7 +580,7 @@ body::after {
 }
 
 .hub-modal-content tr:nth-child(even) {
-  background: rgba(128, 128, 128, 0.05);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .hub-modal-content li {
