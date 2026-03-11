@@ -2,10 +2,10 @@ version: '3.8'
 
 services:
   prompt-ark-hub:
+    image: prompt-ark-hub:latest
     build:
       context: .
       dockerfile: Dockerfile
-      image: prompt-ark-hub:latest
     container_name: prompt-ark-hub
     ports:
       - "8081:3000"
