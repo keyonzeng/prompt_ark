@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  prompt-ark-hub:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      image: prompt-ark-hub:latest
+    container_name: prompt-ark-hub
+    ports:
+      - "8081:3000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    environment:
+      - NODE_ENV=production
+    networks:
+      - prompt-ark-hub-network
+
+networks:
+  prompt-ark-hub-network:
+    driver: bridge
