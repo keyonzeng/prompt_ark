@@ -39,3 +39,7 @@ history.txt
 old_content.js
 
 my-video/
+
+
+#ENV
+.env
