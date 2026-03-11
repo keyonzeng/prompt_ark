@@ -364,7 +364,8 @@ class PopupManager {
         p.title.toLowerCase().includes(searchQuery) ||
         p.content.toLowerCase().includes(searchQuery) ||
         (p.category && p.category.toLowerCase().includes(searchQuery)) ||
-        (p.tags && p.tags.some(t => t.toLowerCase().includes(searchQuery)))
+        (p.tags && p.tags.some(t => t.toLowerCase().includes(searchQuery))) ||
+        (p.sourceContext?.text && p.sourceContext.text.toLowerCase().includes(searchQuery))
       );
     }
 
@@ -439,6 +440,24 @@ class PopupManager {
         `<span class="prompt-vars">${p.variables.length} ${i18n.t('variables')}</span>` : ''}
             ${(() => { const s = PromptScorer.score(p.content); return `<span class="prompt-score" style="color:${PromptScorer.getScoreColor(s)}" title="${i18n.t('promptQuality') || 'Prompt Quality'}: ${s}/100">${s >= 75 ? '●' : s >= 50 ? '◐' : '○'} ${(s / 10).toFixed(1)}</span>`; })()}
           </div>
+${p.sourceContext ? `
+          <div class="source-panel">
+            <div class="source-toggle" data-source-toggle>
+              <span>📋 Source</span>
+              <span class="source-arrow">▶</span>
+            </div>
+            <div class="source-content hidden">
+              ${p.sourceContext.pageTitle ? `<div class="source-meta"><strong>From:</strong> ${p.sourceContext.pageUrl ? `<a href="${this.escapeHtml(p.sourceContext.pageUrl)}" target="_blank" title="${this.escapeHtml(p.sourceContext.pageUrl)}">${this.escapeHtml(p.sourceContext.pageTitle)}</a>` : this.escapeHtml(p.sourceContext.pageTitle)}</div>` : ''}
+              ${p.sourceContext.capturedAt ? `<div class="source-meta"><strong>Captured:</strong> ${formatRelativeTime(p.sourceContext.capturedAt)}</div>` : ''}
+              <div class="source-meta"><strong>Method:</strong> ${p.sourceContext.convertMethod === 'smart_convert' ? '🤖 Smart Convert' : '📎 Quick Add'}</div>
+              <div class="source-text">${this.escapeHtml(p.sourceContext.text?.substring(0, 500) || '')}${(p.sourceContext.text?.length || 0) > 500 ? '...' : ''}</div>
+              <div class="source-actions">
+                <button class="source-action-btn copy-source-btn" title="Copy source text">📋 Copy</button>
+                ${p.sourceContext.pageUrl ? `<button class="source-action-btn open-source-btn" data-url="${this.escapeHtml(p.sourceContext.pageUrl)}" title="Open source page">🔗 Open</button>` : ''}
+              </div>
+            </div>
+          </div>
+` : ''}
         </div>
       </div>
     `).join('');
@@ -550,6 +569,32 @@ class PopupManager {
       const item = e.target.closest('.prompt-item');
       if (!item) return;
       const id = item.dataset.id;
+
+      // Source panel: toggle
+      const sourceToggle = e.target.closest('[data-source-toggle]');
+      if (sourceToggle) {
+        const panel = sourceToggle.closest('.source-panel');
+        const content = panel.querySelector('.source-content');
+        const arrow = panel.querySelector('.source-arrow');
+        content.classList.toggle('hidden');
+        arrow.textContent = content.classList.contains('hidden') ? '▶' : '▼';
+        return;
+      }
+      // Source panel: copy source text
+      if (e.target.closest('.copy-source-btn')) {
+        const prompt = this.prompts.find(p => p.id === id);
+        if (prompt?.sourceContext?.text) {
+          navigator.clipboard.writeText(prompt.sourceContext.text);
+          this.showToast('Source text copied');
+        }
+        return;
+      }
+      // Source panel: open source URL
+      const openBtn = e.target.closest('.open-source-btn');
+      if (openBtn) {
+        window.open(openBtn.dataset.url, '_blank');
+        return;
+      }
 
       // Selection mode: toggle checkbox instead of normal actions
       if (this._packMode) {
