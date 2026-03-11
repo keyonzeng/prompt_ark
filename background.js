@@ -383,6 +383,13 @@ async function handleMessage(message, sendResponse) {
           usageCount: 0,
           lastUsedAt: null,
           favorite: false,
+          sourceContext: {
+            text: selectedText.substring(0, 5000),
+            pageTitle: message.pageTitle || '',
+            pageUrl: message.pageUrl || '',
+            capturedAt: Date.now(),
+            convertMethod: 'quick_add',
+          },
           createdAt: Date.now()
         });
         await buildContextMenus();
@@ -414,6 +421,13 @@ async function handleMessage(message, sendResponse) {
             usageCount: 0,
             lastUsedAt: null,
             favorite: false,
+            sourceContext: {
+              text: selectedText.substring(0, 5000),
+              pageTitle: message.pageTitle || '',
+              pageUrl: message.pageUrl || '',
+              capturedAt: Date.now(),
+              convertMethod: 'smart_convert',
+            },
             createdAt: Date.now()
           };
           await PromptStorage.save(newPrompt);

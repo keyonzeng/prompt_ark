@@ -285,14 +285,13 @@
   }
 }
 
-/* --- Helper Wrapper (injected next to input boxes) --- */
+/* --- Helper Wrapper (positioned outside input boxes, upper-right) --- */
 .notebook-helper-wrapper {
-  position: absolute;
-  top: 4px;
-  right: 4px;
+  position: fixed;
   display: flex;
   gap: 4px;
-  z-index: 1000;
+  z-index: 2147483647;
+  pointer-events: auto;
 }
 
 /* --- Helper Button --- */

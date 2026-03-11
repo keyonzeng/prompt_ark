@@ -242,7 +242,7 @@ class AIPromptManager {
 
     this._handleSmartConvertStatus('start');
     try {
-      const resp = await chrome.runtime.sendMessage({ type: 'SMART_CONVERT_SELECTION', text: pageText });
+      const resp = await chrome.runtime.sendMessage({ type: 'SMART_CONVERT_SELECTION', text: pageText, pageTitle: document.title, pageUrl: location.href });
       if (resp?.success) {
         this._handleSmartConvertStatus('success', resp.title);
       } else {
@@ -326,6 +326,15 @@ class AIPromptManager {
     if (this.platform !== 'generic') {
       this.initMutationObserver();
       setTimeout(() => this.initHelperButtons(), 1000);
+      
+      // Update button positions on scroll and resize
+      let updateTimer = null;
+      const updatePositions = () => {
+        if (updateTimer) clearTimeout(updateTimer);
+        updateTimer = setTimeout(() => this.updateHelperButtonPositions(), 100);
+      };
+      window.addEventListener('scroll', updatePositions, { passive: true });
+      window.addEventListener('resize', updatePositions, { passive: true });
     }
 
     // Global Event Listener: Catch One-Click Install Events from Prompt Hub
@@ -436,12 +445,10 @@ class AIPromptManager {
   initHelperButtons() {
     // Clean up orphaned wrappers whose target input is no longer in the DOM
     document.querySelectorAll('.notebook-helper-wrapper').forEach(wrapper => {
-      const container = wrapper.parentElement;
-      if (!container) { wrapper.remove(); return; }
-      const markedInput = container.querySelector(`[${this.injectedMarker}="true"]`);
-      if (!markedInput || !markedInput.isConnected) {
+      const targetInput = wrapper._apmTargetInput;
+      if (!targetInput || !targetInput.isConnected) {
         wrapper.remove();
-        if (markedInput) markedInput.removeAttribute(this.injectedMarker);
+        if (targetInput) targetInput.removeAttribute(this.injectedMarker);
       }
     });
 
@@ -458,18 +465,22 @@ class AIPromptManager {
     const candidates = this.queryAllDeep(isValidInput);
 
     candidates.forEach(input => {
-      // Walk up to find a container without overflow clipping (max 5 levels)
-      let container = input.parentElement;
-      for (let i = 0; i < 5 && container && container !== document.body; i++) {
-        const s = window.getComputedStyle(container);
-        if (s.overflow !== 'hidden' && s.overflowX !== 'hidden' && s.overflowY !== 'hidden') break;
-        container = container.parentElement;
-      }
+// Walk up to find a container without overflow clipping (max 5 levels)
+let container = input.parentElement;
+for (let i = 0; i < 5 && container && container !== document.body; i++) {
+const s = window.getComputedStyle(container);
+if (s.overflow !== 'hidden' && s.overflowX !== 'hidden' && s.overflowY !== 'hidden') break;
+container = container.parentElement;
+}
       if (!container) return;
+      
+      // Get input rect for positioning
+      const rect = input.getBoundingClientRect();
 
       // Container for multiple buttons
       const btnWrapper = document.createElement('div');
       btnWrapper.className = 'notebook-helper-wrapper';
+      btnWrapper._apmTargetInput = input;
       btnWrapper.style.display = 'flex';
       btnWrapper.style.gap = '4px';
       btnWrapper.style.zIndex = '9999';
@@ -529,35 +540,67 @@ class AIPromptManager {
         btnWrapper.appendChild(qaBtn);
       }
 
-      // Position: use container-relative if possible, else body-fixed
-      if (container === document.body) {
-        const rect = input.getBoundingClientRect();
-        btnWrapper.style.position = 'fixed';
-        btnWrapper.style.top = (rect.top + 4) + 'px';
+      // Position: fixed positioning outside input (upper-right)
+      btnWrapper.style.position = 'fixed';
+      
+      // Calculate position - place above the input, right-aligned
+      const btnHeight = 32; // 28px button + 4px margin
+      const offset = 10;
+      
+      // Platform specific positioning
+      if (this.platform === 'notebooklm') {
+        // NotebookLM: position at top-right outside input
+        btnWrapper.style.top = (rect.top ) + 'px';
         btnWrapper.style.right = (window.innerWidth - rect.right + 4) + 'px';
-        btnWrapper.style.left = 'auto';
+      } else if (this.platform === 'gemini') {
+        // Gemini: position at top-right outside input
+        btnWrapper.style.top = (rect.top - btnHeight - (2*offset)) + 'px';
+        btnWrapper.style.right = (window.innerWidth - rect.right ) + 'px';
       } else {
-        const style = window.getComputedStyle(container);
-        if (style.position === 'static') {
-          container.style.position = 'relative';
-        }
-        // Platform specific offsets for container-relative positioning
-        if (this.platform === 'notebooklm') {
-          // NotebookLM has strict overflow clipping on the right edge.
-          // Placing it on the far right (-45px) causes it to be cut off.
-          // Positioning it at `right: 90px` places it cleanly to the left of the "1 source" and native send button.
-          btnWrapper.style.right = '90px';
-          btnWrapper.style.bottom = '8px';
-          btnWrapper.style.top = 'auto';
-        } else if (this.platform === 'gemini') {
-          btnWrapper.style.right = '48px';
-        }
+        // Default: position at upper-right outside input
+        btnWrapper.style.top = (rect.top - btnHeight - offset) + 'px';
+        btnWrapper.style.right = (window.innerWidth - rect.right + 4) + 'px';
       }
 
-      container.appendChild(btnWrapper);
+      document.body.appendChild(btnWrapper);
       input.setAttribute(this.injectedMarker, 'true');
     });
   }
+  updateHelperButtonPositions() {
+    const btnHeight = 32;
+    const offset = 4;
+    
+    document.querySelectorAll('.notebook-helper-wrapper').forEach(wrapper => {
+      const input = wrapper._apmTargetInput;
+      if (!input || !input.isConnected) {
+        wrapper.remove();
+        return;
+      }
+      
+      const rect = input.getBoundingClientRect();
+      
+      // Hide if input is outside viewport
+      if (rect.bottom < 0 || rect.top > window.innerHeight) {
+        wrapper.style.display = 'none';
+        return;
+      }
+      
+      wrapper.style.display = 'flex';
+      
+      // Platform specific positioning
+      if (this.platform === 'notebooklm') {
+        wrapper.style.top = (rect.top - btnHeight - offset) + 'px';
+        wrapper.style.right = (window.innerWidth - rect.right + 4) + 'px';
+      } else if (this.platform === 'gemini') {
+        wrapper.style.top = (rect.top - btnHeight - offset) + 'px';
+        wrapper.style.right = (window.innerWidth - rect.right + 48) + 'px';
+      } else {
+        wrapper.style.top = (rect.top - btnHeight - offset) + 'px';
+        wrapper.style.right = (window.innerWidth - rect.right + 4) + 'px';
+      }
+    });
+  }
+
 
   showQuickActionsMenu(anchorEl, inputEl) {
     // hide existing
@@ -1044,7 +1087,7 @@ class AIPromptManager {
 
       if (action === 'add') {
         try {
-          const resp = await chrome.runtime.sendMessage({ type: 'QUICK_ADD_SELECTION', text: selectedText });
+          const resp = await chrome.runtime.sendMessage({ type: 'QUICK_ADD_SELECTION', text: selectedText, pageTitle: document.title, pageUrl: location.href });
           if (resp?.success) {
             this.showNotification(this.msg('contextMenuSaveSuccess', 'Added to Prompt Ark ✓'), 'success');
           }
@@ -1054,7 +1097,7 @@ class AIPromptManager {
       } else if (action === 'convert') {
         this._handleSmartConvertStatus('start');
         try {
-          const resp = await chrome.runtime.sendMessage({ type: 'SMART_CONVERT_SELECTION', text: selectedText });
+          const resp = await chrome.runtime.sendMessage({ type: 'SMART_CONVERT_SELECTION', text: selectedText, pageTitle: document.title, pageUrl: location.href });
           if (resp?.success) {
             this._handleSmartConvertStatus('success', resp.title);
           } else {
