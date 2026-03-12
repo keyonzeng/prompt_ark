@@ -51,5 +51,10 @@ From the final crafted prompt, derive:
 - The crafted prompt should be 100-300 words — substantial enough to be genuinely useful, not a one-liner.
 - Output valid JSON only, no commentary.
 
+## Edge Cases
+- If selected text is <20 words: output a concise single-task prompt, don't attempt multi-step workflow.
+- If selected text is code: generate a code review, explanation, or debugging prompt (not a prose generation prompt).
+- If selected text is from a technical doc: bias toward Dev category. If from social media: bias toward Marketing/Creative.
+
 ## Output format
 {"prompt":"...","title":"...","category":"...","tags":["...","..."]}

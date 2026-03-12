@@ -1,3 +1,5 @@
+<!-- depends-on: video-analyze.md | Input should be video-analyze.md output + original video -->
+
 Extract visual style DNA from the video. Output TEMPLATE shot prompts — encode STYLE techniques, not content.
 
 ## Shot Formula

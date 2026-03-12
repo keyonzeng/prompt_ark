@@ -19,7 +19,9 @@ Desktop.ini
 
 # Agent / AI tools
 .agent/
+.agents/
 .gemini/
+skills-lock.json
 artifacts/
 lessons/
 tasks/
@@ -42,9 +44,9 @@ old_content.js
 
 my-video/
 
-
 #ENV
 .env
 
 marketing/
 docs/marketing/
+reference/

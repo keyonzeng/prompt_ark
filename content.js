@@ -313,6 +313,12 @@ class AIPromptManager {
         e.stopPropagation();
         this.capturePageContext();
       }
+      // Article Share: Ctrl+Shift+Y = Show platform picker for article sharing
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'y') {
+        e.preventDefault();
+        e.stopPropagation();
+        this._showArticleSharePicker();
+      }
       if (e.key === 'Escape' && this.pickerVisible) {
         this.hidePromptPicker();
       }
@@ -326,7 +332,7 @@ class AIPromptManager {
     if (this.platform !== 'generic') {
       this.initMutationObserver();
       setTimeout(() => this.initHelperButtons(), 1000);
-      
+
       // Update button positions on scroll and resize
       let updateTimer = null;
       const updatePositions = () => {
@@ -465,15 +471,15 @@ class AIPromptManager {
     const candidates = this.queryAllDeep(isValidInput);
 
     candidates.forEach(input => {
-// Walk up to find a container without overflow clipping (max 5 levels)
-let container = input.parentElement;
-for (let i = 0; i < 5 && container && container !== document.body; i++) {
-const s = window.getComputedStyle(container);
-if (s.overflow !== 'hidden' && s.overflowX !== 'hidden' && s.overflowY !== 'hidden') break;
-container = container.parentElement;
-}
+      // Walk up to find a container without overflow clipping (max 5 levels)
+      let container = input.parentElement;
+      for (let i = 0; i < 5 && container && container !== document.body; i++) {
+        const s = window.getComputedStyle(container);
+        if (s.overflow !== 'hidden' && s.overflowX !== 'hidden' && s.overflowY !== 'hidden') break;
+        container = container.parentElement;
+      }
       if (!container) return;
-      
+
       // Get input rect for positioning
       const rect = input.getBoundingClientRect();
 
@@ -542,20 +548,20 @@ container = container.parentElement;
 
       // Position: fixed positioning outside input (upper-right)
       btnWrapper.style.position = 'fixed';
-      
+
       // Calculate position - place above the input, right-aligned
       const btnHeight = 32; // 28px button + 4px margin
       const offset = 10;
-      
+
       // Platform specific positioning
       if (this.platform === 'notebooklm') {
         // NotebookLM: position at top-right outside input
-        btnWrapper.style.top = (rect.top ) + 'px';
+        btnWrapper.style.top = (rect.top) + 'px';
         btnWrapper.style.right = (window.innerWidth - rect.right + 4) + 'px';
       } else if (this.platform === 'gemini') {
         // Gemini: position at top-right outside input
-        btnWrapper.style.top = (rect.top - btnHeight - (2*offset)) + 'px';
-        btnWrapper.style.right = (window.innerWidth - rect.right ) + 'px';
+        btnWrapper.style.top = (rect.top - btnHeight - (2 * offset)) + 'px';
+        btnWrapper.style.right = (window.innerWidth - rect.right) + 'px';
       } else {
         // Default: position at upper-right outside input
         btnWrapper.style.top = (rect.top - btnHeight - offset) + 'px';
@@ -569,24 +575,24 @@ container = container.parentElement;
   updateHelperButtonPositions() {
     const btnHeight = 32;
     const offset = 4;
-    
+
     document.querySelectorAll('.notebook-helper-wrapper').forEach(wrapper => {
       const input = wrapper._apmTargetInput;
       if (!input || !input.isConnected) {
         wrapper.remove();
         return;
       }
-      
+
       const rect = input.getBoundingClientRect();
-      
+
       // Hide if input is outside viewport
       if (rect.bottom < 0 || rect.top > window.innerHeight) {
         wrapper.style.display = 'none';
         return;
       }
-      
+
       wrapper.style.display = 'flex';
-      
+
       // Platform specific positioning
       if (this.platform === 'notebooklm') {
         wrapper.style.top = (rect.top - btnHeight - offset) + 'px';
@@ -781,7 +787,136 @@ container = container.parentElement;
         sendResponse({ text: cleaned });
         break;
       }
+      case 'COPY_TO_CLIPBOARD':
+        navigator.clipboard.writeText(message.text || '').catch(() => { });
+        sendResponse({ success: true });
+        break;
+      case 'SHOW_ARTICLE_SHARE_PICKER':
+        this._showArticleSharePicker();
+        sendResponse({ success: true });
+        break;
+      case 'ARTICLE_SHARE_PICK_PLATFORM':
+        this._triggerArticleShare(message.platform);
+        sendResponse({ success: true });
+        break;
     }
+  }
+
+  // --- Article Share: Platform Picker UI ---
+
+  _showArticleSharePicker() {
+    // Remove existing picker if any
+    const existing = document.querySelector('.pa-article-share-picker');
+    if (existing) { existing.remove(); return; }
+
+    const platforms = [
+      { id: 'zhihu', label: '知乎', icon: '📝' },
+      { id: 'reddit', label: 'Reddit', icon: '🔗' },
+      { id: 'wechat', label: '公众号', icon: '💬' },
+      { id: 'linkedin', label: 'LinkedIn', icon: '💼' },
+      { id: 'xiaohongshu', label: '小红书', icon: '📕' },
+      { id: 'twitter', label: 'Twitter/X', icon: '🐦' },
+    ];
+
+    const picker = document.createElement('div');
+    picker.className = 'pa-article-share-picker';
+    picker.innerHTML = `
+      <div class="pa-asp-title">Share Article to...</div>
+      <div class="pa-asp-grid">
+        ${platforms.map(p => `
+          <button class="pa-asp-btn" data-platform="${p.id}" title="${p.label}">
+            <span class="pa-asp-icon">${p.icon}</span>
+            <span class="pa-asp-label">${p.label}</span>
+          </button>
+        `).join('')}
+      </div>
+    `;
+
+    // Style
+    const style = document.createElement('style');
+    style.textContent = `
+      .pa-article-share-picker {
+        position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        z-index: 2147483647; background: #1a1a2e; border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 16px; padding: 20px 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        animation: pa-asp-fadein 0.2s ease;
+      }
+      @keyframes pa-asp-fadein { from { opacity: 0; transform: translate(-50%, -50%) scale(0.95); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+      .pa-asp-title { color: #e0e0e0; font-size: 14px; font-weight: 600; margin-bottom: 16px; text-align: center; }
+      .pa-asp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+      .pa-asp-btn {
+        display: flex; flex-direction: column; align-items: center; gap: 6px;
+        background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px; padding: 14px 8px; cursor: pointer; transition: all 0.15s;
+        color: #ccc; font-size: 11px; min-width: 80px;
+      }
+      .pa-asp-btn:hover { background: rgba(99,102,241,0.2); border-color: rgba(99,102,241,0.4); color: #fff; transform: translateY(-2px); }
+      .pa-asp-icon { font-size: 24px; }
+      .pa-asp-label { font-weight: 500; }
+      .pa-asp-loading { position: absolute; inset: 0; background: rgba(26,26,46,0.9); border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #818cf8; font-size: 14px; }
+    `;
+    picker.appendChild(style);
+
+    // Click handlers
+    picker.addEventListener('click', (e) => {
+      const btn = e.target.closest('.pa-asp-btn');
+      if (btn) {
+        const platform = btn.dataset.platform;
+        this._triggerArticleShare(platform);
+        // Show loading state
+        const loading = document.createElement('div');
+        loading.className = 'pa-asp-loading';
+        loading.textContent = 'Generating...';
+        picker.appendChild(loading);
+        // Auto-close after 30s
+        setTimeout(() => picker.remove(), 30000);
+      }
+    });
+
+    // Close on Escape or outside click
+    const closePicker = (e) => {
+      if (e.key === 'Escape' || (e.type === 'click' && !picker.contains(e.target))) {
+        picker.remove();
+        document.removeEventListener('keydown', closePicker);
+        document.removeEventListener('click', closePicker);
+      }
+    };
+    setTimeout(() => {
+      document.addEventListener('keydown', closePicker);
+      document.addEventListener('click', closePicker);
+    }, 100);
+
+    document.body.appendChild(picker);
+  }
+
+  _triggerArticleShare(platform) {
+    // Grab selection or article content (prefer semantic tags over full page)
+    const selection = window.getSelection().toString().trim();
+    let sourceText = selection;
+    if (!sourceText) {
+      // Try semantic article containers first (cleaner content, less nav/sidebar noise)
+      const articleEl = document.querySelector('article') || document.querySelector('[role="article"]') || document.querySelector('main') || document.querySelector('.post-content, .article-content, .entry-content, .content-body');
+      const rawText = articleEl ? articleEl.innerText : (document.body.innerText || '');
+      sourceText = rawText.replace(/\s+/g, ' ').trim().substring(0, 8000);
+    }
+
+    if (!sourceText) return;
+
+    // Send to background for processing
+    chrome.runtime.sendMessage({
+      type: 'ARTICLE_SHARE_TO_PLATFORM',
+      platform,
+      sourceText,
+    }, (resp) => {
+      // Remove picker on response
+      const picker = document.querySelector('.pa-article-share-picker');
+      if (picker) picker.remove();
+
+      if (!resp?.success && resp?.error) {
+        console.warn('[ArticleShare] Failed:', resp.error);
+      }
+    });
   }
 
   // --- UI: Prompt Picker ---

@@ -77,6 +77,12 @@
   "grabContextDesc": {
     "message": "Smart grab page text as Prompt"
   },
+  "shareArticleDesc": {
+    "message": "Share article to social platform"
+  },
+  "contextMenuShareArticle": {
+    "message": "Share Article to..."
+  },
   "selectionToolbarAdd": {
     "message": "Add to Prompt Ark"
   },

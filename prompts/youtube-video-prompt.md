@@ -12,7 +12,7 @@ Create shot-by-shot AI video prompts from the pre-extracted `<video_analysis>`. 
 
 ## Anchors (derive from SCENE CATALOG)
 
-**character_anchor** (25-40 words): gender+age, ethnicity, hair, upper clothing, lower/posture, accessories, distinctive feature.
+**character_anchor** (25-40 words, 7 attributes): 1) gender+age range, 2) ethnicity/skin tone, 3) hair (color+length+style), 4) upper clothing (color+type), 5) lower clothing/posture, 6) accessories, 7) one distinctive feature.
 
 **scene_anchor** (15-25 words): space type, background elements, key light, color temperature, atmosphere.
 

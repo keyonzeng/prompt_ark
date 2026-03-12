@@ -463,6 +463,39 @@
           <input type="text" id="shortcutInput" placeholder="例如 code-review">
         </div>
 
+        <!-- Skill Mode Section -->
+        <div class="skill-mode-section">
+          <div class="skill-toggle-row">
+            <label class="skill-toggle-label">
+              <input type="checkbox" id="skillModeToggle">
+              <span class="skill-toggle-slider"></span>
+              <span data-i18n="skillMode">🧩 Skill 模式</span>
+            </label>
+            <span class="hint skill-hint" data-i18n="skillModeHint">拆分 System Prompt + 附加知识</span>
+          </div>
+
+          <div id="skillFields" class="skill-fields hidden">
+            <div class="form-group">
+              <label for="systemPromptInput">
+                <span data-i18n="systemPrompt">System Prompt</span>
+                <span class="hint" data-i18n="systemPromptHint">定义 AI 角色和行为规则</span>
+              </label>
+              <textarea id="systemPromptInput" rows="4"
+                placeholder="You are a senior code reviewer with 15+ years experience..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>
+                <span data-i18n="knowledgeSnippets">📚 知识片段</span>
+                <span class="hint" data-i18n="knowledgeSnippetsHint">附加参考资料，会自动拼接到 prompt 中</span>
+                <button type="button" id="addSnippetBtn" class="btn-icon-small" title="Add snippet">+</button>
+              </label>
+              <div id="snippetsList" class="snippets-list">
+                <!-- Dynamically rendered -->
+              </div>
+            </div>
+          </div>
+        </div>
 
 
         <div class="form-group">

@@ -77,6 +77,12 @@
   "grabContextDesc": {
     "message": "智能抓取网页正文为 Prompt"
   },
+  "shareArticleDesc": {
+    "message": "分享文章到社交平台"
+  },
+  "contextMenuShareArticle": {
+    "message": "分享文章到..."
+  },
   "selectionToolbarAdd": {
     "message": "添加到 Prompt Ark"
   },

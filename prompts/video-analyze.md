@@ -1,4 +1,4 @@
-Extract video content. Output 4 sections in this exact format.
+Extract video content. Input: a video file (uploaded) or a YouTube URL (via transcription API). Output 4 sections in this exact format.
 
 ## TRANSCRIPT
 Complete speech transcription with timestamps. Every word, no summarizing. Original language.

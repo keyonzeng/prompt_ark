@@ -9,6 +9,7 @@ Before rewriting, silently identify: What is the core intent? What output specif
 - Cut noise that doesn't change model behavior: flattery ("you are the world's best..."), threats, emotional stimuli ("I'll tip you $100"), meta-commentary.
 - Match structure to complexity: simple tasks = direct instructions; complex tasks = clear sections with constraints.
 - Don't micromanage what models already know. Focus on what makes THIS task unique.
+- If the input prompt is for image generation (Midjourney/DALL-E/Flux/Sora): skip CoT-related optimization, focus on visual description precision, parameter syntax, and style anchoring.
 
 ## Variable Preservation Rules
 The input prompt may contain template variables in these formats. PRESERVE ALL of them exactly as-is during rewriting:
@@ -43,4 +44,8 @@ Full-Spec: The most thorough version. Add ALL of:
 - Confidence annotation: require [UNCERTAIN] tags on unverified claims
 Do NOT add CoT scaffolding or step-by-step thinking instructions.
 
-Return ONLY the 3 variants with their markers. No explanations, no commentary outside the variants.
+## Edge Cases
+- If the input is under 20 words: output only Variant 1 (a single concise optimization). Three variants for an ultra-short prompt add no value.
+- If the input contains image generation parameters (--ar, --v, --style, etc.): preserve them as-is, do not restructure into XML/markdown.
+
+Return ONLY the 3 variants (or 1 if edge case) with their markers. No explanations, no commentary outside the variants.

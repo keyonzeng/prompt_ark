@@ -86,6 +86,13 @@
         "mac": "Command+Shift+G"
       },
       "description": "__MSG_grabContextDesc__"
+    },
+    "share-article": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Y",
+        "mac": "Command+Shift+Y"
+      },
+      "description": "__MSG_shareArticleDesc__"
     }
   }
 }

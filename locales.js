@@ -228,7 +228,13 @@ export const translations = {
     "ruleToastSuccess": "📎 规则已添加",
     "noHistoryYet": "还没有历史记录",
     "contextVarsResolved": "✨ 上下文已自动填充",
-    "promptQuality": "提示词质量"
+    "promptQuality": "提示词质量",
+    "skillMode": "🧩 Skill 模式",
+    "skillModeHint": "拆分 System Prompt + 附加知识",
+    "systemPrompt": "System Prompt",
+    "systemPromptHint": "定义 AI 角色和行为规则",
+    "knowledgeSnippets": "📚 知识片段",
+    "knowledgeSnippetsHint": "附加参考资料，会自动拼接到 prompt 中"
   },
   "en": {
     "appName": "Prompt Ark",
@@ -458,6 +464,12 @@ export const translations = {
     "ruleToastSuccess": "📎 Rules Added",
     "noHistoryYet": "No history yet.",
     "contextVarsResolved": "✨ Context auto-filled",
-    "promptQuality": "Prompt Quality"
+    "promptQuality": "Prompt Quality",
+    "skillMode": "🧩 Skill Mode",
+    "skillModeHint": "Split System Prompt + attach knowledge",
+    "systemPrompt": "System Prompt",
+    "systemPromptHint": "Define AI role and behavior rules",
+    "knowledgeSnippets": "📚 Knowledge Snippets",
+    "knowledgeSnippetsHint": "Reference materials, auto-appended to prompt"
   }
 };
