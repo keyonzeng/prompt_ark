@@ -953,11 +953,13 @@ body::after {
 }
 
 /* ===== Auth & Extension Link ===== */
+
 .hub-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 24px;
+  padding: 16px 24px;
+  background: transparent !important;
   border-bottom: 1px solid var(--border);
 }
 
@@ -1021,19 +1023,6 @@ body::after {
   color: var(--text-secondary);
   font-size: 14px;
   margin-top: 4px;
-}
-/* ===== Auth & Extension Link ===== */
-.hub-header {
-  position: relative;
-}
-
-.hub-auth-container {
-  position: absolute;
-  top: 24px;
-  right: 24px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
 }
 
 .hub-ext-link {
@@ -1115,5 +1104,4 @@ body::after {
 
 .hub-ext-link:hover {
   background: var(--bg-hover) !important;
-  border-color: var(--border-hover) !important;
 }

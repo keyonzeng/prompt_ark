@@ -27,8 +27,7 @@ export function Header({
           target="_blank" 
           rel="noopener noreferrer"
         >
-          <img src="/chrome.svg" alt="" className="hub-chrome-icon" />
-          Add to Chrome
+          🧩 Get Extension
         </a>
         <AuthButton user={user} onAuthChange={onAuthChange || (() => {})} />
       </div>
