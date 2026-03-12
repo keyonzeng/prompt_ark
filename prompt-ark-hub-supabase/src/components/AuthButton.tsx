@@ -3,17 +3,19 @@ import { supabase } from '../lib/supabase'
 
 interface AuthButtonProps {
   user: { id: string; email?: string; user_metadata?: { avatar_url?: string; name?: string } } | null
-  onAuthChange: (user: null) => void
+  onAuthChange: (user: any) => void
 }
 
 export function AuthButton({ user, onAuthChange }: AuthButtonProps) {
   const handleLogin = async () => {
-    // For demo purposes, use anonymous login or email
-    // In production, configure GitHub OAuth or other providers in Supabase
     const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'github',
+      provider: 'google',
       options: {
         redirectTo: window.location.origin,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
       },
     })
     if (error) {

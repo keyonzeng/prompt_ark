@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { supabase, type Prompt } from './lib/supabase'
+import { supabase, type Prompt, getCurrentUser } from './lib/supabase'
+import { initAuthSync } from './lib/auth-sync'
 import {
   Header,
   SearchBar,
@@ -12,6 +13,7 @@ import {
   useToast,
   Loading,
   Pagination,
+  AuthButton,
 } from './components'
 
 type SortOption = 'trending' | 'newest' | 'topRated' | 'quality'
@@ -26,6 +28,7 @@ function AppContent() {
   const [sort, setSort] = useState<SortOption>('trending')
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null)
+  const [user, setUser] = useState<any>(null)
   const { showToast } = useToast()
 
   // Get unique categories from prompts
@@ -35,9 +38,11 @@ function AppContent() {
     return ['all', ...Array.from(cats).sort()]
   }, [prompts])
 
-  // Load prompts on mount
+  // Load prompts and init auth on mount
   useEffect(() => {
     loadPrompts()
+    initAuthSync()
+    getCurrentUser().then(setUser)
   }, [])
 
   // Open detail when id param present in URL
@@ -279,7 +284,10 @@ function AppContent() {
 
   return (
     <div className="hub-container">
-      <Header />
+      <Header 
+        user={user}
+        onAuthChange={setUser}
+      />
       
       <SearchBar value={search} onChange={setSearch} />
       

@@ -951,3 +951,34 @@ body::after {
   .hub-modal-footer { flex-direction: column; gap: 12px; }
   .hub-install-btn { width: 100%; }
 }
+
+
+/* ===== Auth & Extension Link ===== */
+.hub-header {
+  position: relative;
+}
+
+.hub-auth-container {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hub-ext-link {
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  background: transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.hub-ext-link:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-hover);
+}
