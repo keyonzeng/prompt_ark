@@ -1,10 +1,11 @@
-version: '3.8'
-
 services:
   prompt-ark-hub:
     image: prompt-ark-hub:latest
     build:
       context: .
+      args:
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY}
       dockerfile: Dockerfile
     container_name: prompt-ark-hub
     ports:
@@ -16,11 +17,9 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
-    environment:
-      - NODE_ENV=production
     networks:
-      - prompt-ark-hub-network
+      - app-network
 
 networks:
-  prompt-ark-hub-network:
-    driver: bridge
+  app-network:
+    external: true
