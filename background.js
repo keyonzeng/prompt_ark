@@ -29,6 +29,29 @@ chrome.sidePanel
   .setPanelBehavior({ openPanelOnActionClick: true })
   .catch((error) => console.error('Side panel setup failed:', error));
 
+// Listen for messages from externally connected pages (e.g., Hub)
+chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => {
+  if (message.type === 'PROMPT_ARK_AUTH_SYNC') {
+    const { isLoggedIn, authToken, user } = message.payload || {};
+    
+    // Store auth state in extension storage
+    chrome.storage.local.set({
+      isLoggedIn: isLoggedIn || false,
+      authToken: authToken || null,
+      hubUser: user || null
+    }).then(() => {
+      console.log('[Hub Auth Sync] Auth state updated:', { isLoggedIn, user: user?.email });
+      sendResponse({ success: true });
+    }).catch((error) => {
+      console.error('[Hub Auth Sync] Failed to store auth:', error);
+      sendResponse({ success: false, error: error.message });
+    });
+    
+    // Return true to indicate async response
+    return true;
+  }
+  return false;
+});
 // --- Storage Helper (DRY) ---
 // User content → Dual-layer: sync (slim) + local (full)
 async function getPrompts() { return await PromptStorage.get(); }
