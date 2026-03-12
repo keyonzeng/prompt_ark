@@ -364,8 +364,14 @@ class AIPromptManager {
       if (event.data && event.data.type === 'PROMPT_ARK_IMPORT' && event.data.payload) {
         this.handleHubImportEvent(event.data.payload, event.source, event.origin);
       }
+      // Handle Hub auth sync
+      if (event.data && event.data.type === 'PROMPT_ARK_AUTH_SYNC' && event.data.payload) {
+        this.handleHubAuthSync(event.data.payload);
+      }
     });
   }
+}
+
 
   async handleHubImportEvent(payload, sourceWindow, origin) {
     if (!payload || !payload.prompts || !Array.isArray(payload.prompts)) return;
@@ -399,6 +405,24 @@ class AIPromptManager {
         this.showPageToast(`❌ Import Failed: ${response.error || 'Unknown Error'}`);
       }
     } catch (e) {
+      console.error('[Prompt Ark] Import Error:', e);
+    }
+  }
+
+  // Handle Hub auth sync - forward to background script
+  async handleHubAuthSync(payload) {
+    console.log('[Prompt Ark] Received auth sync from Hub:', payload);
+    try {
+      await chrome.runtime.sendMessage({ 
+        type: 'PROMPT_ARK_AUTH_SYNC', 
+        payload: payload 
+      });
+    } catch (e) {
+      console.error('[Prompt Ark] Auth sync error:', e);
+    }
+  }
+
+  showPageToast(msg) {
       console.error('[Prompt Ark] Import Error:', e);
     }
   }

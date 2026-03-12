@@ -30,13 +30,8 @@ async function syncAuthToExtension(user: User | null) {
     }
   }
 
-  // Send to extension via chrome.runtime.sendMessage (requires externally_connectable)
-  const ext = (window as any).chrome;
-  if (ext?.runtime?.id) {
-    ext.runtime.sendMessage(ext.runtime.id, authData).catch((err: Error) => {
-      console.log('[Hub Auth Sync] Could not send to extension:', err.message);
-    });
-  }
+  // Send to extension via postMessage (content script will forward to background)
+  window.postMessage(authData, '*');
   
   // Also store in localStorage as fallback
   try {

@@ -29,8 +29,8 @@ chrome.sidePanel
   .setPanelBehavior({ openPanelOnActionClick: true })
   .catch((error) => console.error('Side panel setup failed:', error));
 
-// Listen for messages from externally connected pages (e.g., Hub)
-chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => {
+// Listen for messages from content script (which receives postMessage from Hub)
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'PROMPT_ARK_AUTH_SYNC') {
     const { isLoggedIn, authToken, user } = message.payload || {};
     
@@ -52,6 +52,7 @@ chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => 
   }
   return false;
 });
+
 // --- Storage Helper (DRY) ---
 // User content → Dual-layer: sync (slim) + local (full)
 async function getPrompts() { return await PromptStorage.get(); }
