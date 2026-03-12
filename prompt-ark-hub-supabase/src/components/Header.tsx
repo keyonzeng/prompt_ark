@@ -27,7 +27,7 @@ export function Header({
           target="_blank" 
           rel="noopener noreferrer"
         >
-          🧩 Get Extension
+          🔽 Add to Chrome
         </a>
         <AuthButton user={user} onAuthChange={onAuthChange || (() => {})} />
       </div>

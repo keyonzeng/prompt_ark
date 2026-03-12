@@ -1051,3 +1051,23 @@ body::after {
   background: var(--bg-hover);
   border-color: var(--border-hover);
 }
+
+/* ===== Custom Styles Override ===== */
+.hub-title-section .hub-title {
+  font-size: 32px;
+}
+
+.hub-ext-link {
+  padding: 7px 16px;
+  background: var(--accent) !important;
+  border: 1px solid var(--accent) !important;
+  border-radius: var(--radius-sm);
+  color: #fff !important;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.hub-ext-link:hover {
+  background: var(--success) !important;
+  border-color: var(--success) !important;
+}
