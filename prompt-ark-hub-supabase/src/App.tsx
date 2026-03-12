@@ -289,13 +289,11 @@ function AppContent() {
         onAuthChange={setUser}
       />
       
+      
       <div className="hub-title-section">
         <h1 className="hub-title">Prompt Ark Hub</h1>
         <p className="hub-subtitle">Discover, install, and share AI prompts from the community</p>
       </div>
-      
-      <SearchBar value={search} onChange={setSearch} />
-      
       <SearchBar value={search} onChange={setSearch} />
       
       <div className="hub-controls">
