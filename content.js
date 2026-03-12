@@ -370,7 +370,7 @@ class AIPromptManager {
       }
     });
   }
-}
+
 
 
   async handleHubImportEvent(payload, sourceWindow, origin) {
@@ -419,11 +419,6 @@ class AIPromptManager {
       });
     } catch (e) {
       console.error('[Prompt Ark] Auth sync error:', e);
-    }
-  }
-
-  showPageToast(msg) {
-      console.error('[Prompt Ark] Import Error:', e);
     }
   }
 
