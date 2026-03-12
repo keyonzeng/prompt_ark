@@ -30,10 +30,15 @@ async function syncAuthToExtension(user: User | null) {
     }
   }
 
-  // Send to all frames (including extension)
-  window.postMessage(authData, '*')
+  // Send to extension via chrome.runtime.sendMessage (requires externally_connectable)
+  const ext = (window as any).chrome;
+  if (ext?.runtime?.id) {
+    ext.runtime.sendMessage(ext.runtime.id, authData).catch((err: Error) => {
+      console.log('[Hub Auth Sync] Could not send to extension:', err.message);
+    });
+  }
   
-  // Also try to store in localStorage for direct extension access
+  // Also store in localStorage as fallback
   try {
     localStorage.setItem('prompt_ark_auth', JSON.stringify(authData.payload))
   } catch (e) {
@@ -43,7 +48,6 @@ async function syncAuthToExtension(user: User | null) {
 
 // Listen to auth state changes
 export function initAuthSync() {
-  // Initial sync
   supabase.auth.onAuthStateChange(async (event, session) => {
     console.log('Auth state changed:', event, session?.user?.email)
     
