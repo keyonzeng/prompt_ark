@@ -1071,3 +1071,49 @@ body::after {
   background: var(--success) !important;
   border-color: var(--success) !important;
 }
+
+/* ===== Custom Styles Update ===== */
+.hub-logo-text,
+.hub-ext-link,
+.hub-auth-login-btn {
+  font-size: 14px;
+}
+
+.hub-logo-text {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.hub-title-section {
+  padding: 28px 0 20px;
+}
+
+.hub-title-section .hub-title {
+  font-size: 36px;
+}
+
+.hub-title-section .hub-subtitle {
+  font-size: 16px;
+  margin-top: 10px;
+}
+
+.hub-chrome-icon {
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+.hub-ext-link {
+  padding: 6px 14px;
+  background: transparent !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary) !important;
+  font-size: 14px;
+}
+
+.hub-ext-link:hover {
+  background: var(--bg-hover) !important;
+  border-color: var(--border-hover) !important;
+}
