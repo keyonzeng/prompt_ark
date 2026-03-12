@@ -952,7 +952,76 @@ body::after {
   .hub-install-btn { width: 100%; }
 }
 
+/* ===== Auth & Extension Link ===== */
+.hub-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border);
+}
 
+.hub-auth-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hub-logo-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.hub-logo-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.hub-logo-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.hub-ext-link {
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  background: transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.hub-ext-link:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-hover);
+}
+
+/* ===== Title Section ===== */
+.hub-title-section {
+  text-align: center;
+  padding: 16px 0;
+}
+
+.hub-title-section .hub-title {
+  font-size: 24px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--accent), var(--success));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+}
+
+.hub-title-section .hub-subtitle {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-top: 4px;
+}
 /* ===== Auth & Extension Link ===== */
 .hub-header {
   position: relative;
