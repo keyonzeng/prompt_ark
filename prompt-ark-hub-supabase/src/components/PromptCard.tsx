@@ -1,4 +1,4 @@
-import React from 'react'
+import { useState } from 'react'
 import type { Prompt } from '../lib/supabase'
 
 interface PromptCardProps {
@@ -14,6 +14,8 @@ function scoreClass(score: number | null): string {
 }
 
 export function PromptCard({ prompt, onClick }: PromptCardProps) {
+  const [avatarError, setAvatarError] = useState(false)
+
   return (
     <div 
       className="hub-card" 
@@ -40,15 +42,19 @@ export function PromptCard({ prompt, onClick }: PromptCardProps) {
       
       <div className="hub-card-meta">
         <div className="hub-card-author">
-          {prompt.author_avatar ? (
+          {(prompt.author_avatar && !avatarError) ? (
             <img 
               className="hub-card-avatar" 
               src={prompt.author_avatar} 
               alt={prompt.author} 
               loading="lazy"
+              referrerPolicy="no-referrer"
+              onError={() => setAvatarError(true)}
             />
           ) : (
-            <div className="hub-card-avatar" />
+            <div className="hub-card-avatar">
+              {(prompt.author || 'a').charAt(0).toUpperCase()}
+            </div>
           )}
           <span className="hub-card-author-name">{prompt.author || 'anonymous'}</span>
         </div>

@@ -1,4 +1,4 @@
-import React from 'react'
+import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 
 interface AuthButtonProps {
@@ -7,6 +7,8 @@ interface AuthButtonProps {
 }
 
 export function AuthButton({ user, onAuthChange }: AuthButtonProps) {
+  const [avatarError, setAvatarError] = useState(false)
+
   const handleLogin = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -32,14 +34,18 @@ export function AuthButton({ user, onAuthChange }: AuthButtonProps) {
     return (
       <div className="hub-auth-button">
         <div className="hub-user-info">
-          {user.user_metadata?.avatar_url ? (
+          {(user.user_metadata?.avatar_url && !avatarError) ? (
             <img 
               src={user.user_metadata.avatar_url} 
               alt="avatar" 
               className="hub-user-avatar"
+              referrerPolicy="no-referrer"
+              onError={() => setAvatarError(true)}
             />
           ) : (
-            <div className="hub-user-avatar-placeholder" />
+            <div className="hub-user-avatar-placeholder">
+              {(user.user_metadata?.name || user.email || '?').charAt(0).toUpperCase()}
+            </div>
           )}
           <span className="hub-user-name">{user.user_metadata?.name || user.email}</span>
         </div>

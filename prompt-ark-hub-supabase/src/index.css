@@ -90,31 +90,51 @@ body::after {
 
 /* ===== Header ===== */
 .hub-header {
-  padding: 32px 0 24px;
-  text-align: center;
-}
-
-.hub-logo {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: transparent !important;
+  border-bottom: 1px solid var(--border);
+}
+
+.hub-auth-container {
+  display: flex;
+  align-items: center;
   gap: 12px;
-  margin-bottom: 8px;
 }
 
-.hub-logo h1 {
-  font-size: 24px;
-  font-weight: 700;
-  background: linear-gradient(135deg, var(--accent), var(--success));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.hub-logo-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
 }
 
-.hub-subtitle {
-  color: var(--text-secondary);
+.hub-logo-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.hub-logo-text {
   font-size: 14px;
-  margin-top: 4px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.hub-ext-link {
+  padding: 6px 14px;
+  background: transparent !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary) !important;
+  font-size: 14px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.hub-ext-link:hover {
+  background: var(--bg-hover) !important;
 }
 
 /* ===== Search ===== */
@@ -367,6 +387,11 @@ body::after {
   height: 22px;
   border-radius: 50%;
   background: var(--bg-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
 }
 
 .hub-card-author-name {
@@ -595,10 +620,12 @@ body::after {
 .hub-modal-content ol li {
   list-style-type: decimal;
 }
+
 .hub-modal-content ul, .hub-modal-content ol {
   padding-left: 20px;
   margin: 8px 0;
 }
+
 /* ===== Variables Panel ===== */
 .hub-var-panel {
   background: var(--bg-surface);
@@ -761,6 +788,12 @@ body::after {
 
 .hub-user-avatar-placeholder {
   background: var(--bg-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
 }
 
 .hub-user-name {
@@ -939,78 +972,14 @@ body::after {
   padding: 0 4px;
 }
 
-/* ===== Responsive ===== */
-@media (max-width: 768px) {
-  .hub-container { padding: 0 16px; }
-  .hub-grid { grid-template-columns: 1fr; }
-  .hub-controls { flex-direction: column; align-items: stretch; }
-  .hub-categories { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
-  .hub-modal { width: 95%; max-height: 90vh; }
-  .hub-modal-header { padding: 16px; }
-  .hub-modal-body { padding: 16px; }
-  .hub-modal-footer { flex-direction: column; gap: 12px; }
-  .hub-install-btn { width: 100%; }
-}
-
-/* ===== Auth & Extension Link ===== */
-
-.hub-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 24px;
-  background: transparent !important;
-  border-bottom: 1px solid var(--border);
-}
-
-.hub-auth-container {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.hub-logo-link {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  text-decoration: none;
-}
-
-.hub-logo-icon {
-  width: 32px;
-  height: 32px;
-}
-
-.hub-logo-text {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.hub-ext-link {
-  padding: 6px 14px;
-  border: 1px solid var(--border);
-  background: transparent;
-  border-radius: var(--radius-sm);
-  color: var(--text-secondary);
-  font-size: 12px;
-  text-decoration: none;
-  transition: all 0.2s;
-}
-
-.hub-ext-link:hover {
-  background: var(--bg-hover);
-  border-color: var(--border-hover);
-}
-
 /* ===== Title Section ===== */
 .hub-title-section {
   text-align: center;
-  padding: 16px 0;
+  padding: 28px 0 20px;
 }
 
 .hub-title-section .hub-title {
-  font-size: 24px;
+  font-size: 36px;
   font-weight: 700;
   background: linear-gradient(135deg, var(--accent), var(--success));
   -webkit-background-clip: text;
@@ -1021,67 +990,6 @@ body::after {
 
 .hub-title-section .hub-subtitle {
   color: var(--text-secondary);
-  font-size: 14px;
-  margin-top: 4px;
-}
-
-.hub-ext-link {
-  padding: 6px 14px;
-  border: 1px solid var(--border);
-  background: transparent;
-  border-radius: var(--radius-sm);
-  color: var(--text-secondary);
-  font-size: 12px;
-  text-decoration: none;
-  transition: all 0.2s;
-}
-
-.hub-ext-link:hover {
-  background: var(--bg-hover);
-  border-color: var(--border-hover);
-}
-
-/* ===== Custom Styles Override ===== */
-.hub-title-section .hub-title {
-  font-size: 32px;
-}
-
-.hub-ext-link {
-  padding: 7px 16px;
-  background: var(--accent) !important;
-  border: 1px solid var(--accent) !important;
-  border-radius: var(--radius-sm);
-  color: #fff !important;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.hub-ext-link:hover {
-  background: var(--success) !important;
-  border-color: var(--success) !important;
-}
-
-/* ===== Custom Styles Update ===== */
-.hub-logo-text,
-.hub-ext-link,
-.hub-auth-login-btn {
-  font-size: 14px;
-}
-
-.hub-logo-text {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.hub-title-section {
-  padding: 28px 0 20px;
-}
-
-.hub-title-section .hub-title {
-  font-size: 36px;
-}
-
-.hub-title-section .hub-subtitle {
   font-size: 16px;
   margin-top: 10px;
 }
@@ -1093,15 +1001,15 @@ body::after {
   margin-right: 6px;
 }
 
-.hub-ext-link {
-  padding: 6px 14px;
-  background: transparent !important;
-  border: 1px solid var(--border) !important;
-  border-radius: var(--radius-sm);
-  color: var(--text-secondary) !important;
-  font-size: 14px;
-}
-
-.hub-ext-link:hover {
-  background: var(--bg-hover) !important;
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .hub-container { padding: 0 16px; }
+  .hub-grid { grid-template-columns: 1fr; }
+  .hub-controls { flex-direction: column; align-items: stretch; }
+  .hub-categories { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
+  .hub-modal { width: 95%; max-height: 90vh; }
+  .hub-modal-header { padding: 16px; }
+  .hub-modal-body { padding: 16px; }
+  .hub-modal-footer { flex-direction: column; gap: 12px; }
+  .hub-install-btn { width: 100%; }
 }
