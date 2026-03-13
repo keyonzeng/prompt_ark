@@ -101,7 +101,9 @@ class PopupManager {
       const { isLoggedIn, hubUser } = data || {};
 
       if (isLoggedIn && hubUser) {
-        avatarImg.src = hubUser.avatar || 'about:blank';
+        if (hubUser.avatar) {
+          avatarImg.src = hubUser.avatar;
+        }
         nameSpan.textContent = hubUser.name || hubUser.email || '';
         container.classList.remove('hidden');
       } else {
