@@ -102,7 +102,24 @@ class PopupManager {
 
       if (isLoggedIn && hubUser) {
         if (hubUser.avatar) {
-          avatarImg.src = hubUser.avatar;
+          // 移除旧元素，重新创建 img 以支持 onerror
+          const oldImg = container.querySelector('.hub-user-avatar');
+          if (oldImg) oldImg.remove();
+          const oldInitials = container.querySelector('.hub-user-initials');
+          if (oldInitials) oldInitials.remove();
+          
+          const img = document.createElement('img');
+          img.className = 'hub-user-avatar';
+          img.alt = 'Avatar';
+          img.src = hubUser.avatar;
+          img.onerror = () => {
+            img.remove();
+            const initials = document.createElement('span');
+            initials.className = 'hub-user-initials';
+            initials.textContent = (hubUser.name || hubUser.email || '?')[0].toUpperCase();
+            container.insertBefore(initials, nameSpan);
+          };
+          container.insertBefore(img, nameSpan);
         }
         nameSpan.textContent = hubUser.name || hubUser.email || '';
         container.classList.remove('hidden');

@@ -131,12 +131,29 @@ body::before {
   cursor: default;
 }
 
+.hub-user-info.hidden {
+  display: none;
+}
+
 .hub-user-avatar {
   width: 24px;
   height: 24px;
   border-radius: 50%;
   object-fit: cover;
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hub-user-initials {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .hub-user-name {
