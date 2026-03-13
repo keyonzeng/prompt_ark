@@ -55,14 +55,7 @@ class PopupManager {
         this.renderHubUserInfo();
       }
     });
-
-    // Listen for async AI enrichment updates from background
-    chrome.runtime.onMessage.addListener((msg) => {
-    await this.loadSettings();
-    this.renderCategories();
-    this.renderPrompts();
-    this.bindEvents();
-
+    
     // Listen for async AI enrichment updates from background
     chrome.runtime.onMessage.addListener((msg) => {
       if (msg.type === 'PROMPTS_UPDATED') {
@@ -118,8 +111,6 @@ class PopupManager {
       container.classList.add('hidden');
     }
   }
-
-  async loadPrompts() {
 
   async loadPrompts() {
     const response = await chrome.runtime.sendMessage({ type: 'GET_PROMPTS' });
