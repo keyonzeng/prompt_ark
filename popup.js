@@ -46,6 +46,23 @@ class PopupManager {
     this.renderPrompts();
     this.bindEvents();
 
+    // Render Hub user info if logged in
+    this.renderHubUserInfo();
+
+    // Listen for Hub auth changes (real-time sync)
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === 'local' && (changes.hubUser || changes.isLoggedIn)) {
+        this.renderHubUserInfo();
+      }
+    });
+
+    // Listen for async AI enrichment updates from background
+    chrome.runtime.onMessage.addListener((msg) => {
+    await this.loadSettings();
+    this.renderCategories();
+    this.renderPrompts();
+    this.bindEvents();
+
     // Listen for async AI enrichment updates from background
     chrome.runtime.onMessage.addListener((msg) => {
       if (msg.type === 'PROMPTS_UPDATED') {
@@ -78,6 +95,31 @@ class PopupManager {
       this.renderCategories();
     }
   }
+
+  // --- Hub User Info (登录显示头像和名字) ---
+  async renderHubUserInfo() {
+    const container = document.getElementById('hubUserInfo');
+    const avatarImg = document.getElementById('hubUserAvatar');
+    const nameSpan = document.getElementById('hubUserName');
+    if (!container || !avatarImg || !nameSpan) return;
+
+    try {
+      const data = await chrome.storage.local.get(['isLoggedIn', 'hubUser']);
+      const { isLoggedIn, hubUser } = data || {};
+
+      if (isLoggedIn && hubUser) {
+        avatarImg.src = hubUser.avatar || '';
+        nameSpan.textContent = hubUser.name || hubUser.email || '';
+        container.classList.remove('hidden');
+      } else {
+        container.classList.add('hidden');
+      }
+    } catch (e) {
+      container.classList.add('hidden');
+    }
+  }
+
+  async loadPrompts() {
 
   async loadPrompts() {
     const response = await chrome.runtime.sendMessage({ type: 'GET_PROMPTS' });

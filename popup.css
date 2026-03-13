@@ -120,6 +120,35 @@ body::before {
   color: var(--text-primary);
 }
 
+/* ===================== HUB USER INFO ===================== */
+.hub-user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px 4px 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-sm);
+  cursor: default;
+}
+
+.hub-user-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hub-user-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  max-width: 80px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* ===================== BUTTONS ===================== */
 .btn-icon {
   display: flex;
