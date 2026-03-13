@@ -1,31 +1,26 @@
 import { supabase } from './supabase'
-import type { User } from '@supabase/supabase-js'
+import type { User, Session } from '@supabase/supabase-js'
 
-// Generate a simple auth token from user session
-function generateAuthToken(user: User): string {
-  return btoa(JSON.stringify({
-    userId: user.id,
-    email: user.email,
-    expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000 // 7 days
-  }))
-}
-
-// Sync auth state to extension
-async function syncAuthToExtension(user: User | null) {
+// Sync auth state to extension with real Supabase session tokens
+async function syncAuthToExtension(session: Session | null) {
   const authData = {
     type: 'PROMPT_ARK_AUTH_SYNC',
-    payload: user ? {
+    payload: session ? {
       isLoggedIn: true,
-      authToken: generateAuthToken(user),
+      accessToken: session.access_token,
+      refreshToken: session.refresh_token,
+      expiresAt: session.expires_at,
       user: {
-        id: user.id,
-        email: user.email,
-        name: user.user_metadata?.name,
-        avatar: user.user_metadata?.avatar_url
+        id: session.user.id,
+        email: session.user.email,
+        name: session.user.user_metadata?.name,
+        avatar: session.user.user_metadata?.avatar_url
       }
     } : {
       isLoggedIn: false,
-      authToken: null,
+      accessToken: null,
+      refreshToken: null,
+      expiresAt: null,
       user: null
     }
   }
@@ -41,28 +36,25 @@ async function syncAuthToExtension(user: User | null) {
   }
 }
 
-// Listen to auth state changes
+// Listen to auth state changes (including TOKEN_REFRESHED)
 export function initAuthSync() {
   supabase.auth.onAuthStateChange(async (event, session) => {
     console.log('Auth state changed:', event, session?.user?.email)
     
-    if (session?.user) {
-      await syncAuthToExtension(session.user)
-    } else {
-      await syncAuthToExtension(null)
-    }
+    // Pass full session to get real tokens
+    await syncAuthToExtension(session)
   })
 }
 
-// Get current auth token (for extension to query)
+// Get current access token (for extension to query)
 export function getAuthToken(): string | null {
   const authData = localStorage.getItem('prompt_ark_auth')
   if (!authData) return null
   
   try {
     const parsed = JSON.parse(authData)
-    if (parsed.isLoggedIn && parsed.authToken) {
-      return parsed.authToken
+    if (parsed.isLoggedIn && parsed.accessToken) {
+      return parsed.accessToken
     }
   } catch (e) {
     return null

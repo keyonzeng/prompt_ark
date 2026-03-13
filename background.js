@@ -32,12 +32,14 @@ chrome.sidePanel
 // Listen for messages from content script (which receives postMessage from Hub)
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'PROMPT_ARK_AUTH_SYNC') {
-    const { isLoggedIn, authToken, user } = message.payload || {};
+    const { isLoggedIn, accessToken, refreshToken, expiresAt, user } = message.payload || {};
     
     // Store auth state in extension storage
     chrome.storage.local.set({
       isLoggedIn: isLoggedIn || false,
-      authToken: authToken || null,
+      accessToken: accessToken || null,
+      refreshToken: refreshToken || null,
+      expiresAt: expiresAt || null,
       hubUser: user || null
     }).then(() => {
       console.log('[Hub Auth Sync] Auth state updated:', { isLoggedIn, user: user?.email });
