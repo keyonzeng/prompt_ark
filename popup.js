@@ -156,6 +156,13 @@ class PopupManager {
     const ghInput = document.getElementById('githubTokenInput');
     if (ghInput && ghResp.token) ghInput.value = ghResp.token;
 
+    // Load OpenClaw settings
+    const ocResp = await chrome.runtime.sendMessage({ type: 'GET_OPENCLAW_SETTINGS' });
+    const ocEndpointInput = document.getElementById('openclawEndpointInput');
+    if (ocEndpointInput && ocResp.endpoint) ocEndpointInput.value = ocResp.endpoint;
+    const ocApiKeyInput = document.getElementById('openclawApiKeyInput');
+    if (ocApiKeyInput && ocResp.apiKey) ocApiKeyInput.value = ocResp.apiKey;
+
     // Load Sync Settings
     const syncResp = await chrome.runtime.sendMessage({ type: 'GET_SYNC_SETTINGS' });
     const syncSelect = document.getElementById('syncBackendSelect');
@@ -213,6 +220,15 @@ class PopupManager {
     if (ghToken) {
       await chrome.runtime.sendMessage({ type: 'SAVE_GITHUB_TOKEN', token: ghToken });
     }
+
+    // Save OpenClaw settings
+    const openclawEndpoint = document.getElementById('openclawEndpointInput')?.value?.trim() || '';
+    const openclawApiKey = document.getElementById('openclawApiKeyInput')?.value?.trim() || '';
+    await chrome.runtime.sendMessage({ 
+      type: 'SAVE_OPENCLAW_SETTINGS', 
+      endpoint: openclawEndpoint,
+      apiKey: openclawApiKey
+    });
 
     // Save Sync Settings
     const syncBackend = document.getElementById('syncBackendSelect')?.value || 'none';
@@ -452,6 +468,9 @@ class PopupManager {
                   <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
                 </svg>
               </button>
+              <button class="action-btn p2s-btn" title="Prompt to Skill (Push to OpenClaw)">
+                🧩
+              </button>
               <button class="action-btn insert-btn" title="${i18n.t('insert')}">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M12 5v14M5 12h14"/>
@@ -658,6 +677,7 @@ ${p.sourceContext ? `
       if (e.target.closest('.insert-btn')) this.insertPrompt(id);
       else if (e.target.closest('.fav-btn')) this.toggleFavorite(id);
       else if (e.target.closest('.share-btn')) this.sharePrompt(id);
+      else if (e.target.closest('.p2s-btn')) this.pushToSkill(id, e.target.closest('.p2s-btn'));
       else if (e.target.closest('.edit-btn')) this.editPrompt(id);
       else if (e.target.closest('.copy-btn')) this.copyPrompt(id);
       else if (e.target.closest('.translate-list-btn')) this.showTranslatePopover(id, e.target.closest('.translate-list-btn'));
@@ -1028,6 +1048,11 @@ ${p.sourceContext ? `
     // --- YouTube → Prompt ---
     document.getElementById('youtubePromptBtn')?.addEventListener('click', () => this.showYoutubeModal());
     document.getElementById('closeYoutubeModal')?.addEventListener('click', () => this.hideYoutubeModal());
+
+    // --- Skill Manager ---
+    document.getElementById('skillManagerBtn')?.addEventListener('click', () => this.showSkillManager());
+    document.getElementById('closeSkillManagerModal')?.addEventListener('click', () => this.hideSkillManager());
+    document.getElementById('skillBackBtn')?.addEventListener('click', () => this.backToSkillList());
     document.getElementById('youtubeGenerateBtn')?.addEventListener('click', () => this.generateYoutubePrompt());
     document.getElementById('youtubeSaveBtn')?.addEventListener('click', () => this.saveYoutubePrompt());
     document.getElementById('youtubeEditSaveBtn')?.addEventListener('click', () => this.editYoutubePrompt());
@@ -1966,6 +1991,163 @@ ${p.sourceContext ? `
       this.showToast(`❌ ${err.message || 'Translation error'}`, 4000);
     } finally {
       if (btn) { btn.innerHTML = originalHtml; btn.disabled = false; }
+    }
+  }
+
+  async pushToSkill(id, btn) {
+    const prompt = this.prompts.find(p => p.id === id);
+    if (!prompt) return;
+
+    const originalHtml = btn.innerHTML;
+    btn.innerHTML = '<span class="p2s-spinner"></span>';
+    btn.disabled = true;
+
+    try {
+      const resp = await chrome.runtime.sendMessage({
+        type: 'GENERATE_SKILL',
+        promptData: {
+          id: prompt.id,
+          title: prompt.title,
+          category: prompt.category,
+          content: prompt.content
+        }
+      });
+      if (resp.success) {
+        this.showToast('✅ Skill generated & saved: ' + (resp.skill?.skill_name || ''));
+      } else {
+        this.showToast('❌ ' + (resp.error || 'Generation failed'), 4000);
+      }
+    } catch (e) {
+      this.showToast('❌ Communication error', 4000);
+    } finally {
+      btn.innerHTML = originalHtml;
+      btn.disabled = false;
+    }
+  }
+
+  // --- Skill Manager Panel ---
+
+  async showSkillManager() {
+    const modal = document.getElementById('skillManagerModal');
+    modal.classList.remove('hidden');
+    await this.renderSkillList();
+  }
+
+  hideSkillManager() {
+    document.getElementById('skillManagerModal').classList.add('hidden');
+    // Hide detail view if open
+    document.getElementById('skillDetailView')?.classList.add('hidden');
+    document.getElementById('skillListView')?.classList.remove('hidden');
+  }
+
+  async renderSkillList() {
+    const listEl = document.getElementById('skillListContent');
+    const emptyEl = document.getElementById('skillEmptyState');
+    const resp = await chrome.runtime.sendMessage({ type: 'GET_SKILLS' });
+    const skills = resp.skills || [];
+
+    if (skills.length === 0) {
+      listEl.innerHTML = '';
+      emptyEl.classList.remove('hidden');
+      return;
+    }
+    emptyEl.classList.add('hidden');
+
+    listEl.innerHTML = skills.map(s => {
+      const date = new Date(s.createdAt).toLocaleString();
+      const pushBadge = s.pushed
+        ? '<span class="skill-badge skill-badge-pushed">✅ Pushed</span>'
+        : '<span class="skill-badge skill-badge-local">💾 Local</span>';
+      return `
+      <div class="skill-card" data-skill-id="${s.id}">
+        <div class="skill-card-header">
+          <span class="skill-card-name">🧩 ${this.escapeHtml(s.skill_name)}</span>
+          ${pushBadge}
+        </div>
+        <div class="skill-card-desc">${this.escapeHtml(s.description || 'No description')}</div>
+        <div class="skill-card-meta">
+          <span>📄 ${this.escapeHtml(s.source_prompt_title || 'Unknown Prompt')}</span>
+          <span>🕐 ${date}</span>
+        </div>
+        <div class="skill-card-actions">
+          <button class="btn btn-secondary btn-small skill-view-btn">📖 View</button>
+          <button class="btn btn-primary btn-small skill-push-btn" ${s.pushed ? 'disabled' : ''}>🚀 Push</button>
+          <button class="btn btn-small skill-delete-btn">🗑️</button>
+        </div>
+      </div>`;
+    }).join('');
+
+    // Event delegation
+    listEl.onclick = async (e) => {
+      const card = e.target.closest('.skill-card');
+      if (!card) return;
+      const skillId = card.dataset.skillId;
+
+      if (e.target.closest('.skill-view-btn')) {
+        this.viewSkillDetail(skillId, skills);
+      } else if (e.target.closest('.skill-push-btn')) {
+        await this.pushSkillFromManager(skillId, e.target.closest('.skill-push-btn'));
+      } else if (e.target.closest('.skill-delete-btn')) {
+        await this.deleteSkill(skillId);
+      }
+    };
+  }
+
+  viewSkillDetail(skillId, skills) {
+    const skill = (skills || []).find(s => s.id === skillId);
+    if (!skill) return;
+
+    document.getElementById('skillListView').classList.add('hidden');
+    const detailView = document.getElementById('skillDetailView');
+    detailView.classList.remove('hidden');
+
+    document.getElementById('skillDetailTitle').textContent = skill.skill_name;
+    const contentEl = document.getElementById('skillDetailContent');
+    const md = skill.files?.['SKILL.md'] || 'No SKILL.md content';
+    // Render as markdown if marked.js available, otherwise plain text
+    if (typeof marked !== 'undefined') {
+      contentEl.innerHTML = marked.parse(md);
+    } else {
+      contentEl.textContent = md;
+    }
+  }
+
+  backToSkillList() {
+    document.getElementById('skillDetailView').classList.add('hidden');
+    document.getElementById('skillListView').classList.remove('hidden');
+  }
+
+  async pushSkillFromManager(skillId, btn) {
+    const origText = btn.textContent;
+    btn.textContent = '⏳...';
+    btn.disabled = true;
+    try {
+      const resp = await chrome.runtime.sendMessage({ type: 'PUSH_SKILL', skillId });
+      if (resp.success) {
+        this.showToast('✅ Pushed to OpenClaw');
+        await this.renderSkillList(); // refresh to show pushed badge
+      } else {
+        this.showToast('❌ ' + (resp.error || 'Push failed'), 4000);
+        btn.disabled = false;
+      }
+    } catch (e) {
+      this.showToast('❌ Network error', 4000);
+      btn.disabled = false;
+    } finally {
+      btn.textContent = origText;
+    }
+  }
+
+  async deleteSkill(skillId) {
+    if (!confirm('Delete this skill?')) return;
+    try {
+      const resp = await chrome.runtime.sendMessage({ type: 'DELETE_SKILL', skillId });
+      if (resp.success) {
+        this.showToast('🗑️ Skill deleted');
+        await this.renderSkillList();
+      }
+    } catch (e) {
+      this.showToast('❌ Delete failed', 3000);
     }
   }
 

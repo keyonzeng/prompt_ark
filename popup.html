@@ -269,6 +269,19 @@
             <input type="password" id="githubTokenInput" class="settings-input"
               data-i18n-placeholder="githubTokenPlaceholder" placeholder="ghp_xxxxxxxxxxxx">
           </div>
+
+          <div class="settings-section-header" style="margin-top: 16px;">
+            <label data-i18n="openclawSettings">🤖 OpenClaw Agent (P2S)</label>
+          </div>
+          <span class="settings-hint" data-i18n="openclawHint">Push generated skills to local OpenClaw</span>
+          <div class="form-row">
+            <input type="text" id="openclawEndpointInput" class="settings-input"
+              placeholder="http://127.0.0.1:4100/api/v1/skills">
+          </div>
+          <div class="form-row" style="margin-top: 8px;">
+            <input type="password" id="openclawApiKeyInput" class="settings-input"
+              placeholder="API Key (Optional)">
+          </div>
         </div>
       </div>
 
@@ -435,6 +448,7 @@
       <button id="packBtn" class="btn btn-secondary btn-small" title="Share Prompt Pack">📦</button>
       <button id="youtubePromptBtn" class="btn btn-secondary btn-small"
         title="从视频生成 Prompt（YouTube / TikTok / 抖音 / 快手）">🎬</button>
+      <button id="skillManagerBtn" class="btn btn-secondary btn-small" title="Skill Manager">🧩</button>
       <span class="shortcut-hint" data-i18n="shortcutHint">Ctrl+Shift+P 快捷插入</span>
     </footer>
   </div>
@@ -857,6 +871,32 @@
   </div>
 
   <script src="lib/marked.min.js"></script>
+
+  <!-- Skill Manager Modal -->
+  <div id="skillManagerModal" class="modal hidden">
+    <div class="modal-content skill-manager-modal">
+      <div class="modal-header">
+        <h2>🧩 Skill Manager</h2>
+        <button class="modal-close" id="closeSkillManagerModal">&times;</button>
+      </div>
+      <!-- List View -->
+      <div id="skillListView" class="skill-manager-body">
+        <div id="skillEmptyState" class="skill-empty hidden">
+          <div class="skill-empty-icon">🧩</div>
+          <p>No skills generated yet.</p>
+          <p class="skill-empty-hint">Click the 🧩 button on any prompt to generate a skill.</p>
+        </div>
+        <div id="skillListContent" class="skill-list"></div>
+      </div>
+      <!-- Detail View -->
+      <div id="skillDetailView" class="skill-detail hidden">
+        <button class="btn btn-secondary btn-small skill-back-btn" id="skillBackBtn">← Back</button>
+        <h3 id="skillDetailTitle"></h3>
+        <div id="skillDetailContent" class="skill-detail-md"></div>
+      </div>
+    </div>
+  </div>
+
   <script src="popup.js" type="module"></script>
 
 </body>
