@@ -18,6 +18,7 @@ import { generateVideoPromptWithAI } from './lib/ai/video-prompt.js';
 import { generateSkillWithAI, pushSkillToOpenClaw } from './lib/ai/p2s-forge.js';
 import { generateShareText, shareToSocialPlatform, generateArticleShareText, ARTICLE_SHARE_PLATFORMS, SOCIAL_EDITORS } from './lib/ai/share.js';
 import { buildContextMenus, handleContextMenuClick } from './lib/context-menu.js';
+import { initSupabase, initSupabaseFromStorage, isAuthenticated as isSupabaseAuthenticated, from as supabaseFrom } from './lib/supabase/client.js';
 
 
 const githubClient = new GitHubClient();
@@ -35,7 +36,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'PROMPT_ARK_AUTH_SYNC') {
     const { isLoggedIn, accessToken, refreshToken, expiresAt, user } = message.payload || {};
     
-    // Store auth state in extension storage
     chrome.storage.local.set({
       isLoggedIn: isLoggedIn || false,
       accessToken: accessToken || null,
@@ -44,16 +44,26 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       hubUser: user || null
     }).then(() => {
       console.log('[Hub Auth Sync] Auth state updated:', { isLoggedIn, user: user?.email });
+      
+      if (isLoggedIn && accessToken && refreshToken) {
+        initSupabase(accessToken, refreshToken, expiresAt, user);
+      }
+      
       sendResponse({ success: true });
     }).catch((error) => {
       console.error('[Hub Auth Sync] Failed to store auth:', error);
       sendResponse({ success: false, error: error.message });
     });
     
-    // Return true to indicate async response
     return true;
   }
   return false;
+});
+
+initSupabaseFromStorage().then(success => {
+  if (success) {
+    console.log('[Supabase] Session restored from storage');
+  }
 });
 
 // --- Storage Helper (DRY) ---
