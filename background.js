@@ -18,7 +18,7 @@ import { generateVideoPromptWithAI } from './lib/ai/video-prompt.js';
 import { generateSkillWithAI, pushSkillToOpenClaw } from './lib/ai/p2s-forge.js';
 import { generateShareText, shareToSocialPlatform, generateArticleShareText, ARTICLE_SHARE_PLATFORMS, SOCIAL_EDITORS } from './lib/ai/share.js';
 import { buildContextMenus, handleContextMenuClick } from './lib/context-menu.js';
-import { initSupabase, initSupabaseFromStorage, isAuthenticated as isSupabaseAuthenticated, from as supabaseFrom } from './lib/supabase/client.js';
+import { initSupabase, initSupabaseFromStorage, isAuthenticated as isSupabaseAuthenticated, from as supabaseFrom, signOut } from './lib/supabase/client.js';
 
 
 const githubClient = new GitHubClient();
@@ -47,6 +47,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       
       if (isLoggedIn && accessToken && refreshToken) {
         initSupabase(accessToken, refreshToken, expiresAt, user);
+      } else {
+        signOut();
       }
       
       sendResponse({ success: true });
