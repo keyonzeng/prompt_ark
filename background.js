@@ -238,11 +238,11 @@ async function callProvider(provider, prompt) {
 }
 
 async function requireHubAuth() {
-  const authToken = await LocalStorage.get('accessToken');
-  if (!authToken) {
+  const accessToken = await LocalStorage.get('accessToken');
+  if (!accessToken) {
     throw new Error('NOT_LOGGED_IN');
   }
-  return authToken;
+  return accessToken;
 }
 
 async function handleMessage(message, sendResponse) {
@@ -826,8 +826,8 @@ async function handleMessage(message, sendResponse) {
       }
 
       case 'CHECK_HUB_LOGIN': {
-        const authToken = await LocalStorage.get('accessToken');
-        if (!authToken) {
+        const accessToken = await LocalStorage.get('accessToken');
+        if (!accessToken) {
           sendResponse({ success: true, isLoggedIn: false });
           break;
         }
