@@ -109,6 +109,13 @@ async function handlePendingIntent() {
     }
   } catch (e) {
     console.error('[PendingIntent] Failed:', e);
+    await chrome.storage.local.remove('pendingIntent');
+    chrome.notifications.create({
+      type: 'basic',
+      iconUrl: 'icons/icon128.png',
+      title: '❌ Publish Failed',
+      message: `Failed to publish: ${e.message || 'Unknown error'}. Please try again.`
+    });
   }
 }
 
