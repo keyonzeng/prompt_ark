@@ -19,6 +19,7 @@ CREATE TABLE public.profiles (
 );
 
 -- Trigger to create profile on user signup
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 DROP FUNCTION IF EXISTS public.handle_new_user();
 CREATE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
