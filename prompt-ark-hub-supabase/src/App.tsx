@@ -45,7 +45,36 @@ function AppContent() {
     getCurrentUser().then(setUser)
   }, [])
 
-  // Open detail when id param present in URL
+  // Load prompt by ID from URL params (supports unlisted access)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const promptId = params.get('prompt') || params.get('id')
+    if (promptId) {
+      loadPromptById(promptId)
+    }
+  }, [])
+
+  async function loadPromptById(id: string) {
+    const { data, error } = await supabase
+      .from('prompts')
+      .select('*')
+      .eq('id', id)
+      .single()
+    
+    if (error) {
+      console.error('Error loading prompt:', error)
+      showToast('Failed to load prompt')
+      return
+    }
+    
+    if (data && ['public', 'unlisted'].includes(data.visibility)) {
+      setSelectedPrompt(data)
+    } else if (data?.visibility === 'private') {
+      showToast('This prompt is private')
+    }
+  }
+
+  // Open detail when id param present in URL (fallback to local search)
   useEffect(() => {
     if (prompts.length === 0) return
     const params = new URLSearchParams(window.location.search)
@@ -60,9 +89,17 @@ function AppContent() {
 
   async function loadPrompts() {
     setLoading(true)
-    const { data, error } = await supabase
+    
+    // Get current user for personalized visibility
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    // Load: public prompts + author's own prompts (any visibility)
+    let query = supabase
       .from('prompts')
       .select('*')
+      .or(`visibility.eq.public${user ? `,author_id.eq.${user.id}` : ''}`)
+    
+    const { data, error } = await query
     
     if (error) {
       console.error('Error loading prompts:', error)

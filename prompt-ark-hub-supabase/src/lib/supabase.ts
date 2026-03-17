@@ -33,6 +33,7 @@ export interface Prompt {
   upvotes: number
   downvotes: number
   install_count: number
+  visibility: 'public' | 'unlisted' | 'private'
   created_at: string
   updated_at: string
 }
