@@ -6,7 +6,7 @@ import { GitHubClient } from './lib/github-client.js';
 import { DEFAULT_PROMPTS } from './lib/default-prompts.js';
 import { translations } from './locales.js';
 import { loadPrompt, preloadAllPrompts } from './lib/prompt-loader.js';
-import { HubClient } from './lib/hub-client.js';
+import { HubClient } from './lib/supabase/client.js';
 import { safeParseJSON, fetchWithTimeout, getProviders, setProviders, getActiveProvider, migrateProviderSettings, callCloudAPI } from './lib/ai/provider.js';
 import { extractVariables, classifyVariables, resolveContextVariables, composePrompt } from './lib/variables.js';
 import { detectLanguageHeuristic, extractTitleHeuristic, matchCategory, extractTitleAndCategory as _extractTitleAndCategory } from './lib/text-analysis.js';
@@ -187,42 +187,12 @@ async function callProvider(provider, prompt) {
   return null;
 }
 
-// --- Share via Gist Helper (DRY: replaces SHARE_PROMPT + SHARE_PACK inline code) ---
-async function shareViaGist(message) {
-  const token = await LocalStorage.get('githubToken');
-  if (!token) return { success: false, error: 'GitHub token not configured' };
-
-  const allPrompts = await getPrompts();
-  const isPack = message.type === 'SHARE_PACK';
-
-  let prompts, title, filename;
-  if (isPack) {
-    prompts = allPrompts.filter(p => message.ids.includes(p.id));
-    if (prompts.length === 0) return { success: false, error: 'No prompts found' };
-    title = message.packTitle || 'Prompt Pack';
-    filename = `prompt-ark-pack-${title.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase().slice(0, 40)}.json`;
-  } else {
-    const prompt = allPrompts.find(p => p.id === message.id);
-    if (!prompt) return { success: false, error: 'Prompt not found' };
-    prompts = [prompt];
-    title = prompt.title;
-    filename = `prompt-ark-${(title || 'untitled').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase().slice(0, 40)}.json`;
+async function requireHubAuth() {
+  const authToken = await LocalStorage.get('hubAccessToken');
+  if (!authToken) {
+    throw new Error('NOT_LOGGED_IN');
   }
-
-  const serializePrompt = p => ({
-    title: p.title, content: p.content, category: p.category || '',
-    tags: p.tags || [], variables: p.variables || [], shortcut: p.shortcut || '',
-  });
-
-  const shareData = {
-    format: 'prompt-ark', version: 1, exportedAt: new Date().toISOString(),
-    ...(isPack ? { pack: { title, count: prompts.length } } : {}),
-    prompts: prompts.map(serializePrompt),
-  };
-
-  const gistTitle = isPack ? `[Prompt Ark Pack] ${title} (${prompts.length} prompts)` : `[Prompt Ark] ${title}`;
-  const result = await githubClient.createGist(gistTitle, filename, JSON.stringify(shareData, null, 2), token);
-  return { success: true, url: `https://keyonzeng.github.io/prompt_ark/?gist=${result.gistId}` };
+  return authToken;
 }
 
 async function handleMessage(message, sendResponse) {
@@ -795,22 +765,29 @@ async function handleMessage(message, sendResponse) {
       }
 
       case 'SHARE_PROMPT': {
-        const result = await shareViaGist(message, sendResponse);
-        if (result) sendResponse(result);
+        try {
+          await requireHubAuth();
+          const result = await HubClient.publishPrompt(message.prompt, 'unlisted');
+          sendResponse({ success: true, id: result.id, url: result.url });
+        } catch (e) {
+          sendResponse({ success: false, error: e.message });
+        }
         break;
       }
 
-      case 'SHARE_PACK': {
-        const result = await shareViaGist(message, sendResponse);
-        if (result) sendResponse(result);
-        break;
-      }
-
-      case 'SAVE_GITHUB_TOKEN': {
-        await LocalStorage.set('githubToken', message.token);
-        // Refresh SyncManager in background instantly
-        await SyncManager.loadConfig();
-        sendResponse({ success: true });
+      case 'CHECK_HUB_LOGIN': {
+        const authToken = await LocalStorage.get('hubAccessToken');
+        if (!authToken) {
+          sendResponse({ success: true, isLoggedIn: false });
+          break;
+        }
+        
+        try {
+          const { loggedIn, user } = await HubClient.checkLogin();
+          sendResponse({ success: true, isLoggedIn: loggedIn, user });
+        } catch (e) {
+          sendResponse({ success: true, isLoggedIn: false });
+        }
         break;
       }
 
@@ -877,35 +854,24 @@ async function handleMessage(message, sendResponse) {
       }
 
       case 'PUBLISH_TO_HUB': {
-        const ghToken = await LocalStorage.get('githubToken');
-        if (!ghToken) {
-          sendResponse({ success: false, error: 'GitHub token not configured. Go to Settings → GitHub Token.' });
-          break;
+        try {
+          await requireHubAuth();
+          const result = await HubClient.publishPrompt(message.prompt, message.visibility || 'public');
+          sendResponse({ success: true, id: result.id, url: result.url });
+        } catch (e) {
+          sendResponse({ success: false, error: e.message });
         }
-        const target = await PromptStorage.getById(message.id);
-        if (!target) {
-          sendResponse({ success: false, error: 'Prompt not found' });
-          break;
-        }
-        const pubResult = await HubClient.publishPrompt(target, ghToken);
-        sendResponse({ success: true, gistId: pubResult.gistId, hubUrl: pubResult.hubUrl, indexGistId: pubResult.indexGistId, updated: pubResult.updated });
         break;
       }
 
       case 'PUBLISH_PACK_TO_HUB': {
-        const ghToken2 = await LocalStorage.get('githubToken');
-        if (!ghToken2) {
-          sendResponse({ success: false, error: 'GitHub token not configured.' });
-          break;
+        try {
+          await requireHubAuth();
+          const result = await HubClient.publishPack(message.prompts, message.packTitle, message.visibility || 'public');
+          sendResponse({ success: true, id: result.id, url: result.url });
+        } catch (e) {
+          sendResponse({ success: false, error: e.message });
         }
-        const allP2 = await getPrompts();
-        const packPrompts = (message.promptIds || []).map(id => allP2.find(p => p.id === id)).filter(Boolean);
-        if (packPrompts.length === 0) {
-          sendResponse({ success: false, error: 'No valid prompts found for pack' });
-          break;
-        }
-        const packResult = await HubClient.publishPack(packPrompts, message.packTitle || 'Prompt Pack', ghToken2);
-        sendResponse({ success: true, gistId: packResult.gistId, hubUrl: packResult.hubUrl });
         break;
       }
 
