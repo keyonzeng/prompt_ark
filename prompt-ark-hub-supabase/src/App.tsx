@@ -38,11 +38,25 @@ function AppContent() {
     return ['all', ...Array.from(cats).sort()]
   }, [prompts])
 
-  // Load prompts and init auth on mount
+  const handleExternalLoginTrigger = async () => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('action') !== 'login' || params.get('source') !== 'extension') return
+    
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin,
+        queryParams: { access_type: 'offline', prompt: 'consent' },
+      },
+    })
+    if (error) console.error('Auto login error:', error)
+  }
+
   useEffect(() => {
     loadPrompts()
     initAuthSync()
     getCurrentUser().then(setUser)
+    handleExternalLoginTrigger()
   }, [])
 
   // Load prompt by ID from URL params (supports unlisted access)
