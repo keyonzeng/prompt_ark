@@ -188,7 +188,7 @@ async function callProvider(provider, prompt) {
 }
 
 async function requireHubAuth() {
-  const authToken = await LocalStorage.get('hubAccessToken');
+  const authToken = await LocalStorage.get('accessToken');
   if (!authToken) {
     throw new Error('NOT_LOGGED_IN');
   }
@@ -776,7 +776,7 @@ async function handleMessage(message, sendResponse) {
       }
 
       case 'CHECK_HUB_LOGIN': {
-        const authToken = await LocalStorage.get('hubAccessToken');
+        const authToken = await LocalStorage.get('accessToken');
         if (!authToken) {
           sendResponse({ success: true, isLoggedIn: false });
           break;
