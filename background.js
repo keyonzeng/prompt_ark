@@ -42,11 +42,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       refreshToken: refreshToken || null,
       expiresAt: expiresAt || null,
       hubUser: user || null
-    }).then(() => {
+    }).then(async () => {
       console.log('[Hub Auth Sync] Auth state updated:', { isLoggedIn, user: user?.email });
       
       if (isLoggedIn && accessToken && refreshToken) {
         initSupabase(accessToken, refreshToken, expiresAt, user);
+        await handlePendingIntent();
       } else {
         signOut();
       }
@@ -61,6 +62,55 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
   return false;
 });
+
+const PENDING_INTENT_TTL = 15 * 60 * 1000;
+
+async function handlePendingIntent() {
+  const result = await chrome.storage.local.get(['pendingIntent']);
+  const intent = result.pendingIntent;
+  
+  if (!intent) return;
+  
+  if (Date.now() - intent.timestamp > PENDING_INTENT_TTL) {
+    await chrome.storage.local.remove('pendingIntent');
+    return;
+  }
+  
+  console.log('[PendingIntent] Executing:', intent.action);
+  
+  try {
+    if (intent.action === 'PUBLISH_TO_HUB') {
+      const resp = await HubClient.publishPrompt(intent.promptData, 'public');
+      await chrome.storage.local.remove('pendingIntent');
+      chrome.notifications.create({
+        type: 'basic',
+        iconUrl: 'icons/icon128.png',
+        title: '🎉 Published to Hub!',
+        message: `Your prompt "${intent.promptData.title}" is now live on Hub.`
+      });
+    } else if (intent.action === 'PUBLISH_PACK_TO_HUB') {
+      const resp = await HubClient.publishPack(intent.promptData.prompts, intent.promptData.packTitle, 'public');
+      await chrome.storage.local.remove('pendingIntent');
+      chrome.notifications.create({
+        type: 'basic',
+        iconUrl: 'icons/icon128.png',
+        title: '🎉 Pack Published!',
+        message: `Your prompt pack "${intent.promptData.packTitle}" is now live on Hub.`
+      });
+    } else if (intent.action === 'SHARE_TO_PLATFORM') {
+      const resp = await HubClient.publishPrompt(intent.promptData, 'unlisted');
+      await chrome.storage.local.remove('pendingIntent');
+      chrome.notifications.create({
+        type: 'basic',
+        iconUrl: 'icons/icon128.png',
+        title: '🔗 Link Generated!',
+        message: 'Your prompt link is ready. You can now share it.'
+      });
+    }
+  } catch (e) {
+    console.error('[PendingIntent] Failed:', e);
+  }
+}
 
 initSupabaseFromStorage().then(success => {
   if (success) {

@@ -11,7 +11,9 @@
     "scripting",
     "contextMenus",
     "sidePanel",
-    "cookies"
+    "cookies",
+    "tabs",
+    "notifications"
   ],
   "host_permissions": [
     "https://generativelanguage.googleapis.com/*",
