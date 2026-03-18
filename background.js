@@ -16,7 +16,7 @@ import { smartConvertWithAI } from './lib/ai/smart-convert.js';
 import { asyncEnrichPrompt as _asyncEnrichPrompt } from './lib/ai/enrich.js';
 import { generateVideoPromptWithAI } from './lib/ai/video-prompt.js';
 import { generateSkillWithAI, pushSkillToOpenClaw } from './lib/ai/p2s-forge.js';
-import { generateShareText, shareToSocialPlatform, generateArticleShareText, ARTICLE_SHARE_PLATFORMS, SOCIAL_EDITORS } from './lib/ai/share.js';
+import { generateShareText, shareToSocialPlatform, generateArticleShareText, ARTICLE_SHARE_PLATFORMS, SOCIAL_EDITORS, buildFallbackText } from './lib/ai/share.js';
 import { buildContextMenus, handleContextMenuClick } from './lib/context-menu.js';
 import { initSupabase, initSupabaseFromStorage, isAuthenticated as isSupabaseAuthenticated, from as supabaseFrom, signOut } from './lib/supabase/client.js';
 
@@ -98,13 +98,55 @@ async function handlePendingIntent() {
         message: `Your prompt pack "${intent.promptData.packTitle}" is now live on Hub.`
       });
     } else if (intent.action === 'SHARE_TO_PLATFORM') {
-      const resp = await HubClient.publishPrompt(intent.promptData, 'unlisted');
+      const { promptData, platform } = intent;
+      const resp = await HubClient.publishPrompt(promptData, 'unlisted');
+      
+      const shareUrl = resp.url;
+      const shareTitle = promptData.title || 'AI Prompt';
+      
       await chrome.storage.local.remove('pendingIntent');
+      
+      const fallbackText = buildFallbackText(platform, shareTitle, shareUrl, promptData);
+      
+      if (platform === 'zhihu' || platform === 'wechat' || platform === 'xiaohongshu') {
+        await shareToSocialPlatform({
+          content: promptData.content || '',
+          title: shareTitle,
+          url: shareUrl,
+          platform,
+          fallbackText,
+        }, () => {});
+      } else if (platform === 'twitter') {
+        const tweetText = fallbackText || `${shareTitle}\n\n🔗 ${shareUrl}`;
+        await chrome.tabs.create({ url: `https://x.com/intent/tweet?text=${encodeURIComponent(tweetText)}` });
+      } else if (platform === 'reddit') {
+        const redditBody = fallbackText || `${shareTitle}\n\n🔗 ${shareUrl}`;
+        await chrome.tabs.create({ url: `https://www.reddit.com/submit?type=TEXT&title=${encodeURIComponent(shareTitle)}` });
+        await chrome.tabs.query({ active: true, currentWindow: true }).then(tabs => {
+          if (tabs[0]) chrome.tabs.sendMessage(tabs[0].id, { type: 'COPY_TO_CLIPBOARD', text: redditBody });
+        });
+      } else if (platform === 'linkedin') {
+        const linkedinText = fallbackText || `${shareTitle}\n\n🔗 ${shareUrl}`;
+        await chrome.tabs.create({ url: 'https://www.linkedin.com/feed/' });
+        await chrome.tabs.query({ active: true, currentWindow: true }).then(tabs => {
+          if (tabs[0]) chrome.tabs.sendMessage(tabs[0].id, { type: 'COPY_TO_CLIPBOARD', text: linkedinText });
+        });
+      } else if (platform === 'copy') {
+        await chrome.tabs.query({ active: true, currentWindow: true }).then(tabs => {
+          if (tabs[0]) chrome.tabs.sendMessage(tabs[0].id, { type: 'COPY_TO_CLIPBOARD', text: shareUrl });
+        });
+      } else if (platform === 'json') {
+        const json = JSON.stringify({ title: shareTitle, content: promptData.content, category: promptData.category, tags: promptData.tags }, null, 2);
+        await chrome.tabs.query({ active: true, currentWindow: true }).then(tabs => {
+          if (tabs[0]) chrome.tabs.sendMessage(tabs[0].id, { type: 'COPY_TO_CLIPBOARD', text: json });
+        });
+      }
+      
       chrome.notifications.create({
         type: 'basic',
         iconUrl: 'icons/icon128.png',
-        title: '🔗 Link Generated!',
-        message: 'Your prompt link is ready. You can now share it.'
+        title: '🔗 ' + (platform === 'copy' || platform === 'json' ? 'Copied!' : 'Opening ' + platform + '...'),
+        message: platform === 'copy' || platform === 'json' ? 'Check your clipboard' : 'Check the new tab to finish sharing.'
       });
     }
   } catch (e) {
