@@ -53,10 +53,12 @@ function AppContent() {
   }
 
   useEffect(() => {
-    loadPrompts()
     initAuthSync()
-    getCurrentUser().then(setUser)
     handleExternalLoginTrigger()
+  }, [])
+
+  useEffect(() => {
+    loadPrompts()
   }, [])
 
   // Load prompt by ID from URL params (supports unlisted access)
@@ -104,14 +106,13 @@ function AppContent() {
   async function loadPrompts() {
     setLoading(true)
     
-    // Get current user for personalized visibility
     const { data: { user } } = await supabase.auth.getUser()
+    setUser(user)
     
-    // Load: public prompts + author's own prompts (any visibility)
     let query = supabase
       .from('prompts')
       .select('*')
-      .or(`visibility.eq.public${user ? `,author_id.eq.${user.id}` : ''}`)
+      .eq('visibility', 'public')
     
     const { data, error } = await query
     
