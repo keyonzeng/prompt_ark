@@ -174,7 +174,6 @@ async function handlePendingIntent() {
 initSupabaseFromStorage().then(success => {
   if (success) {
     console.log('[Supabase] Session restored from storage');
-    handlePendingIntent();
   }
 });
 
