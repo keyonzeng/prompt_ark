@@ -76,12 +76,14 @@ async function handlePendingIntent() {
     return;
   }
   
+  // Immediately remove to prevent duplicate execution (Hub Auth Sync may trigger multiple times)
+  await chrome.storage.local.remove('pendingIntent');
+  
   console.log('[PendingIntent] Executing:', intent.action);
   
   try {
     if (intent.action === 'PUBLISH_TO_HUB') {
       const resp = await HubClient.publishPrompt(intent.promptData, 'public');
-      await chrome.storage.local.remove('pendingIntent');
       chrome.notifications.create({
         type: 'basic',
         iconUrl: 'icons/icon128.png',
@@ -90,7 +92,6 @@ async function handlePendingIntent() {
       });
     } else if (intent.action === 'PUBLISH_PACK_TO_HUB') {
       const resp = await HubClient.publishPack(intent.promptData.prompts, intent.promptData.packTitle, 'public');
-      await chrome.storage.local.remove('pendingIntent');
       chrome.notifications.create({
         type: 'basic',
         iconUrl: 'icons/icon128.png',
@@ -103,8 +104,6 @@ async function handlePendingIntent() {
       
       const shareUrl = resp.url;
       const shareTitle = promptData.title || 'AI Prompt';
-      
-      await chrome.storage.local.remove('pendingIntent');
       
       const fallbackText = buildFallbackText(platform, shareTitle, shareUrl, promptData);
       
@@ -151,7 +150,6 @@ async function handlePendingIntent() {
     }
   } catch (e) {
     console.error('[PendingIntent] Failed:', e);
-    await chrome.storage.local.remove('pendingIntent');
     chrome.notifications.create({
       type: 'basic',
       iconUrl: 'icons/icon128.png',
