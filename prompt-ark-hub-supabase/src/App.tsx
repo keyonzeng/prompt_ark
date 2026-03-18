@@ -61,6 +61,34 @@ function AppContent() {
     loadPrompts()
   }, [])
 
+  useEffect(() => {
+    const channel = supabase
+      .channel('prompts-insert')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'prompts',
+          filter: 'visibility=eq.public',
+        },
+        (payload) => {
+          console.log('[Hub] New prompt inserted:', payload.new)
+          setPrompts((prev) => {
+            const newList = [payload.new as Prompt, ...prev]
+            return newList.sort((a, b) => 
+              new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+            )
+          })
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [])
+
   // Load prompt by ID from URL params (supports unlisted access)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)

@@ -81,6 +81,11 @@ CREATE INDEX idx_prompts_quality_score ON public.prompts(quality_score DESC);
 DROP INDEX IF EXISTS idx_prompts_visibility;
 CREATE INDEX idx_prompts_visibility ON public.prompts(visibility) WHERE visibility = 'public';
 
+-- Enable Realtime for prompts table
+DROP PUBLICATION IF EXISTS supabase_realtime;
+CREATE PUBLICATION supabase_realtime;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.prompts;
+
 -- ============================================
 -- VOTES TABLE
 -- ============================================
