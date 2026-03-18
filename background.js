@@ -64,24 +64,34 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 const PENDING_INTENT_TTL = 15 * 60 * 1000;
+let _isPendingIntentRunning = false;
 
 async function handlePendingIntent() {
-  const result = await chrome.storage.local.get(['pendingIntent']);
-  const intent = result.pendingIntent;
-  
-  if (!intent) return;
-  
-  if (Date.now() - intent.timestamp > PENDING_INTENT_TTL) {
-    await chrome.storage.local.remove('pendingIntent');
+  if (_isPendingIntentRunning) {
+    console.log('[PendingIntent] Already running, skipping');
     return;
   }
-  
-  // Immediately remove to prevent duplicate execution (Hub Auth Sync may trigger multiple times)
-  await chrome.storage.local.remove('pendingIntent');
-  
-  console.log('[PendingIntent] Executing:', intent.action);
+  _isPendingIntentRunning = true;
   
   try {
+    const result = await chrome.storage.local.get(['pendingIntent']);
+    const intent = result.pendingIntent;
+    
+    if (!intent) {
+      _isPendingIntentRunning = false;
+      return;
+    }
+    
+    if (Date.now() - intent.timestamp > PENDING_INTENT_TTL) {
+      await chrome.storage.local.remove('pendingIntent');
+      _isPendingIntentRunning = false;
+      return;
+    }
+    
+    await chrome.storage.local.remove('pendingIntent');
+    
+    console.log('[PendingIntent] Executing:', intent.action);
+    
     if (intent.action === 'PUBLISH_TO_HUB') {
       const resp = await HubClient.publishPrompt(intent.promptData, 'public');
       chrome.notifications.create({
@@ -156,6 +166,8 @@ async function handlePendingIntent() {
       title: '❌ Publish Failed',
       message: `Failed to publish: ${e.message || 'Unknown error'}. Please try again.`
     });
+  } finally {
+    _isPendingIntentRunning = false;
   }
 }
 

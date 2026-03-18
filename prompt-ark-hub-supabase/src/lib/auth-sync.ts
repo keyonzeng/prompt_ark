@@ -37,7 +37,12 @@ async function syncAuthToExtension(session: Session | null) {
 }
 
 // Listen to auth state changes (including TOKEN_REFRESHED)
+let _authSyncInitialized = false;
+
 export function initAuthSync() {
+  if (_authSyncInitialized) return;
+  _authSyncInitialized = true;
+  
   supabase.auth.onAuthStateChange(async (event, session) => {
     console.log('Auth state changed:', event, session?.user?.email)
     
