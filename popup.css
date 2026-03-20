@@ -50,6 +50,10 @@ body {
    Side panel has full viewport height (>600px) unlike popup (capped at 600px).
    When detected, remove fixed sizing and fill the available space. */
 @media (min-height: 601px) {
+  html, body {
+    height: 100%;
+    overflow: hidden;
+  }
   body {
     width: 100%;
     min-height: 100vh;
