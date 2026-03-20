@@ -671,6 +671,11 @@ ${p.sourceContext ? `
       this.showToast(i18n.t('renameCategory') + ': ' + trimmed);
     });
 
+    // Category datalist: clear on click to show all options
+    document.getElementById('categoryInput')?.addEventListener('mousedown', function() {
+      if (this.value) this.value = '';
+    });
+
     // Prompt list actions (delegated)
     document.getElementById('promptList').addEventListener('click', (e) => {
       // Pagination buttons
