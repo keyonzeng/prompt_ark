@@ -990,7 +990,7 @@ class AIPromptManager {
         if (request.dict) this.i18nDict = request.dict;
         break;
       case 'GET_SELECTION':
-        sendResponse({ text: window.getSelection().toString() });
+        sendResponse({ text: this._savedSelection || window.getSelection().toString() });
         break;
       case 'GET_PAGE_TEXT': {
         // Return cleaned page text, capped at 5000 chars
@@ -1149,6 +1149,9 @@ class AIPromptManager {
       this.hidePromptPicker();
       return;
     }
+
+    // Save current selection before opening picker (clicking may clear selection)
+    this._savedSelection = window.getSelection().toString().trim();
 
     if (!this.isContextValid()) {
       this.showNotification(this.msg('extensionReload', '扩展已更新，请刷新页面'), 'error');
