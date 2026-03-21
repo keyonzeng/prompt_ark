@@ -363,8 +363,18 @@ class AIPromptManager {
 
   // Capture current page context and instantly Smart Convert it
   async capturePageContext() {
-    const article = document.querySelector('article') || document.querySelector('main') || document.body;
-    const pageText = (article?.innerText || '').substring(0, 4000).trim();
+    // Exclude extension-injected DOM (Prompt Picker, selection toolbar, slash dropdown)
+    const article = document.querySelector('article') || document.querySelector('main');
+    let pageText = '';
+    if (article) {
+      const clone = article.cloneNode(true);
+      clone.querySelectorAll('#ai-prompt-picker, #apm-selection-toolbar, .apm-slash-dropdown').forEach(el => el.remove());
+      pageText = (clone.innerText || '').substring(0, 4000).trim();
+    } else {
+      const bodyClone = document.body.cloneNode(true);
+      bodyClone.querySelectorAll('#ai-prompt-picker, #apm-selection-toolbar, .apm-slash-dropdown').forEach(el => el.remove());
+      pageText = (bodyClone.innerText || '').substring(0, 4000).trim();
+    }
 
     if (!pageText) {
       this.showNotification('❌ ' + this.msg('noPageText', 'No readable text found on page'), 'error');
@@ -938,7 +948,18 @@ class AIPromptManager {
         break;
       case 'GET_PAGE_TEXT': {
         // Return cleaned page text, capped at 5000 chars
-        const rawText = document.body.innerText || '';
+        // Exclude extension-injected DOM (Prompt Picker, selection toolbar, slash dropdown)
+        const article = document.querySelector('article') || document.querySelector('main');
+        let rawText = '';
+        if (article) {
+          const clone = article.cloneNode(true);
+          clone.querySelectorAll('#ai-prompt-picker, #apm-selection-toolbar, .apm-slash-dropdown').forEach(el => el.remove());
+          rawText = clone.innerText || '';
+        } else {
+          const bodyClone = document.body.cloneNode(true);
+          bodyClone.querySelectorAll('#ai-prompt-picker, #apm-selection-toolbar, .apm-slash-dropdown').forEach(el => el.remove());
+          rawText = bodyClone.innerText || '';
+        }
         const cleaned = rawText.replace(/\s+/g, ' ').trim().substring(0, 5000);
         sendResponse({ text: cleaned });
         break;
