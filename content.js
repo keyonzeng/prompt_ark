@@ -361,20 +361,66 @@ class AIPromptManager {
   // These are resolved BEFORE showing the variable form, so users never see them.
   static CONTEXT_VARS = new Set(['@page_text', '@selection', '@page_url', '@page_title']);
 
+  // Clean extracted text: remove technical noise, short status labels, duplicate lines
+  static cleanExtractedText(rawText) {
+    const shortNoiseExact = new Set([
+      '进阶思考', '来源', '参考来源', 'Sources', 'Source',
+      '思考', '原因', '结论', 'Details', 'Details:', 'More'
+    ]);
+
+    const shortNoisePatterns = [
+      /^Thought for \d+s$/i,
+      /^Reasoned for \d+ seconds?$/i,
+      /^思考了 \d+ 秒$/i,
+    ];
+
+    const technicalNoiseMarkers = [
+      'window.__',
+      'requestAnimationFrame(',
+      'document.querySelector',
+      'addEventListener(',
+      '__oai',
+      'oai_logHTML',
+      'oai_logTTI',
+      'oai_SSR_HTML',
+      'oai_SSR_TTI',
+    ];
+
+    const lines = rawText
+      .split(/\n+/)
+      .map(line => line.trim())
+      .filter(Boolean)
+      .filter(line => {
+        if (technicalNoiseMarkers.some(marker => line.includes(marker))) {
+          return false;
+        }
+        if (shortNoiseExact.has(line)) return false;
+        if (shortNoisePatterns.some(re => re.test(line))) return false;
+        return true;
+      });
+
+    // Compress consecutive duplicate lines
+    const deduped = lines.filter((line, i) => i === 0 || line !== lines[i - 1]);
+
+    return deduped.join('\n').substring(0, 5000);
+  }
+
   // Capture current page context and instantly Smart Convert it
   async capturePageContext() {
     // Exclude extension-injected DOM (Prompt Picker, selection toolbar, slash dropdown)
     const article = document.querySelector('article') || document.querySelector('main');
-    let pageText = '';
+    let rawText = '';
     if (article) {
       const clone = article.cloneNode(true);
       clone.querySelectorAll('#ai-prompt-picker, #apm-selection-toolbar, .apm-slash-dropdown').forEach(el => el.remove());
-      pageText = (clone.innerText || '').substring(0, 4000).trim();
+      rawText = clone.innerText || '';
     } else {
       const bodyClone = document.body.cloneNode(true);
       bodyClone.querySelectorAll('#ai-prompt-picker, #apm-selection-toolbar, .apm-slash-dropdown').forEach(el => el.remove());
-      pageText = (bodyClone.innerText || '').substring(0, 4000).trim();
+      rawText = bodyClone.innerText || '';
     }
+
+    const pageText = AIPromptManager.cleanExtractedText(rawText);
 
     if (!pageText) {
       this.showNotification('❌ ' + this.msg('noPageText', 'No readable text found on page'), 'error');
@@ -960,7 +1006,7 @@ class AIPromptManager {
           bodyClone.querySelectorAll('#ai-prompt-picker, #apm-selection-toolbar, .apm-slash-dropdown').forEach(el => el.remove());
           rawText = bodyClone.innerText || '';
         }
-        const cleaned = rawText.replace(/\s+/g, ' ').trim().substring(0, 5000);
+        const cleaned = AIPromptManager.cleanExtractedText(rawText);
         sendResponse({ text: cleaned });
         break;
       }
