@@ -359,7 +359,7 @@ class AIPromptManager {
 
   // Context Grabber: auto-fill magic variables with live webpage data
   // These are resolved BEFORE showing the variable form, so users never see them.
-  static CONTEXT_VARS = new Set(['page_text', 'selected_text', 'page_url', 'page_title']);
+  static CONTEXT_VARS = new Set(['@page_text', '@selection', '@page_url', '@page_title']);
 
   // Capture current page context and instantly Smart Convert it
   async capturePageContext() {
@@ -388,7 +388,7 @@ class AIPromptManager {
   // Async resolver: tries cached context first (cross-tab), falls back to live DOM
   async resolveContextVariables(content) {
     const vars = this.extractVariables(content);
-    const hasContextVars = vars.some(v => AIPromptManager.CONTEXT_VARS.has(v));
+    const hasContextVars = vars.some(v => AIPromptManager.CONTEXT_VARS.has(v.name));
     if (!hasContextVars) return content;
 
     const contextValues = {};
@@ -401,23 +401,23 @@ class AIPromptManager {
     } catch (e) { /* no cache available */ }
 
     // Fill each variable: prefer cache, fallback to current page
-    if (vars.includes('page_url')) {
-      contextValues.page_url = cached?.page_url || window.location.href;
+    if (vars.some(v => v.name === '@page_url')) {
+      contextValues['@page_url'] = cached?.page_url || window.location.href;
     }
-    if (vars.includes('page_title')) {
-      contextValues.page_title = cached?.page_title || document.title || '';
+    if (vars.some(v => v.name === '@page_title')) {
+      contextValues['@page_title'] = cached?.page_title || document.title || '';
     }
-    if (vars.includes('selected_text')) {
+    if (vars.some(v => v.name === '@selection')) {
       // Selected text: prefer live selection (user might have just selected something)
       const liveSelection = window.getSelection()?.toString()?.trim() || '';
-      contextValues.selected_text = liveSelection || cached?.selected_text || '';
+      contextValues['@selection'] = liveSelection || cached?.selected_text || '';
     }
-    if (vars.includes('page_text')) {
+    if (vars.some(v => v.name === '@page_text')) {
       if (cached?.page_text) {
-        contextValues.page_text = cached.page_text;
+        contextValues['@page_text'] = cached.page_text;
       } else {
         const article = document.querySelector('article') || document.querySelector('main') || document.body;
-        contextValues.page_text = (article?.innerText || '').substring(0, 4000).trim();
+        contextValues['@page_text'] = (article?.innerText || '').substring(0, 4000).trim();
       }
     }
 
