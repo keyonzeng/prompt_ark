@@ -8,6 +8,7 @@ import { translations } from './locales.js';
 import { loadPrompt, preloadAllPrompts } from './lib/prompt-loader.js';
 import { HubClient } from './lib/supabase/client.js';
 import { safeParseJSON, fetchWithTimeout, getProviders, setProviders, getActiveProvider, migrateProviderSettings, callCloudAPI } from './lib/ai/provider.js';
+import { encrypt, decrypt } from './lib/crypto.js';
 import { extractVariables, classifyVariables, resolveContextVariables, composePrompt } from './lib/variables.js';
 import { detectLanguageHeuristic, extractTitleHeuristic, matchCategory, extractTitleAndCategory as _extractTitleAndCategory } from './lib/text-analysis.js';
 import { optimizePromptWithAI } from './lib/ai/optimize.js';
@@ -334,11 +335,14 @@ async function handleMessage(message, sendResponse) {
         break;
 
       case 'GET_OPENCLAW_SETTINGS':
-        sendResponse(await LocalStorage.get('openclaw') || { endpoint: '', apiKey: '' });
+        const ocSettings = await LocalStorage.get('openclaw') || { endpoint: '', apiKey: '' };
+        if (ocSettings.apiKey) ocSettings.apiKey = await decrypt(ocSettings.apiKey);
+        sendResponse(ocSettings);
         break;
 
       case 'SAVE_OPENCLAW_SETTINGS':
-        await LocalStorage.set('openclaw', { endpoint: message.endpoint, apiKey: message.apiKey });
+        const encApiKey = message.apiKey ? await encrypt(message.apiKey) : '';
+        await LocalStorage.set('openclaw', { endpoint: message.endpoint, apiKey: encApiKey });
         sendResponse({ success: true });
         break;
 
@@ -945,6 +949,9 @@ async function handleMessage(message, sendResponse) {
           const camel = k.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
           return [camel, values[i] || defaults[k] || ''];
         }));
+        if (settings.obsidianLocalApiKey) {
+          settings.obsidianLocalApiKey = await decrypt(settings.obsidianLocalApiKey);
+        }
         sendResponse({ success: true, ...settings });
         break;
       }
@@ -963,7 +970,10 @@ async function handleMessage(message, sendResponse) {
         if (message.obsidianFolder !== undefined) await LocalStorage.set('obsidianFolder', message.obsidianFolder);
 
         if (message.obsidianLocalPort !== undefined) await LocalStorage.set('obsidianLocalPort', message.obsidianLocalPort);
-        if (message.obsidianLocalApiKey !== undefined) await LocalStorage.set('obsidianLocalApiKey', message.obsidianLocalApiKey);
+        if (message.obsidianLocalApiKey !== undefined) {
+          const encObsKey = message.obsidianLocalApiKey ? await encrypt(message.obsidianLocalApiKey) : '';
+          await LocalStorage.set('obsidianLocalApiKey', encObsKey);
+        }
 
         await SyncManager.loadConfig();
         sendResponse({ success: true });
