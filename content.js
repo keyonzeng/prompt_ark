@@ -252,8 +252,10 @@ class AIPromptManager {
 
   // --- Prompt Injection ---
 
-  async injectIntoElement(inputEl, text) {
+  async injectIntoElement(inputEl, text, options = {}) {
     if (!inputEl) return false;
+
+    const { replaceAll = false } = options;
 
     inputEl.focus();
     await new Promise(r => setTimeout(r, 50));
@@ -262,9 +264,28 @@ class AIPromptManager {
 
     // Strategy A: ProseMirror / ContentEditable (ChatGPT, Claude)
     if (inputEl.classList.contains('ProseMirror') || inputEl.isContentEditable) {
+      if (replaceAll) {
+        try {
+          const selection = window.getSelection();
+          if (selection) {
+            const range = document.createRange();
+            range.selectNodeContents(inputEl);
+            selection.removeAllRanges();
+            selection.addRange(range);
+          }
+        } catch (e) { /* selection API may fail on some editors */ }
+      }
+
       try {
         success = document.execCommand('insertText', false, text);
       } catch (e) { /* execCommand not supported */ }
+
+      if (!success && replaceAll) {
+        try {
+          inputEl.textContent = text;
+          success = true;
+        } catch (e) { /* fallback below */ }
+      }
     }
 
     // Strategy B: Textarea/Input with React bypass (Gemini, NotebookLM, or Generic Web Forms)
@@ -1846,7 +1867,7 @@ class AIPromptManager {
     if (vars.length > 0) {
       // Set callback to inject into the original input
       this.onSelectCallback = async (content) => {
-        await this.injectIntoElement(inputEl, content);
+        await this.injectIntoElement(inputEl, content, { replaceAll: true });
       };
 
       this.renderPromptPicker();
@@ -1856,7 +1877,7 @@ class AIPromptManager {
     } else {
       // Track usage for slash command injection
       chrome.runtime.sendMessage({ type: 'TRACK_USAGE', id: item.id }).catch(() => { });
-      await this.injectIntoElement(inputEl, finalContent);
+      await this.injectIntoElement(inputEl, finalContent, { replaceAll: true });
     }
   }
 }
