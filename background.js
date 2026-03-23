@@ -488,13 +488,14 @@ async function handleMessage(message, sendResponse) {
           category: p.category || '',
           tags: p.tags || [],
           shortcut: p.shortcut || '',
+          favorite: p.favorite || false,
           variables: p.variables || extractVariables(p.content),
           createdAt: Date.now()
         }));
         // Append to existing (not overwrite!)
         const existing = await getPrompts();
         await PromptStorage.bulkSet([...existing, ...imported]);
-        await buildContextMenus();
+        await buildContextMenus(getPrompts);
         sendResponse({ success: true });
 
         // Async AI enrichment for imported prompts missing metadata
@@ -515,7 +516,7 @@ async function handleMessage(message, sendResponse) {
 
       case 'LANGUAGE_CHANGED': {
         // Rebuild context menus immediately when user changes language
-        buildContextMenus();
+        buildContextMenus(getPrompts);
 
         // Broadcast new translation dictionary to all active tabs
         chrome.storage.sync.get('language').then(({ language }) => {
@@ -577,7 +578,7 @@ async function handleMessage(message, sendResponse) {
           },
           createdAt: Date.now()
         });
-        await buildContextMenus();
+        await buildContextMenus(getPrompts);
         try { chrome.runtime.sendMessage({ type: 'PROMPTS_UPDATED' }); } catch { /* OK */ }
         sendResponse({ success: true });
         // Async AI enrichment (non-blocking)
@@ -616,7 +617,7 @@ async function handleMessage(message, sendResponse) {
             createdAt: Date.now()
           };
           await PromptStorage.save(newPrompt);
-          await buildContextMenus();
+          await buildContextMenus(getPrompts);
           try { chrome.runtime.sendMessage({ type: 'PROMPTS_UPDATED', prompt: newPrompt }); } catch { /* OK */ }
           sendResponse({ success: true, title: newPrompt.title });
         } catch (e) {

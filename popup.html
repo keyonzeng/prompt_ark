@@ -726,6 +726,8 @@
               <div class="preview-status">
                 <strong><span id="previewCount">0</span></strong>
                 <span data-i18n="promptsFiltered">个 Prompt（已筛选）</span>
+                <span class="preview-stats-separator">|</span>
+                <span data-i18n="avgScore">平均分</span>: <strong><span id="previewAvgScore">-</span></strong>
               </div>
               <div class="preview-legend">
                 <span class="dot high"></span><span data-i18n="qualityHigh">高</span>
@@ -733,6 +735,7 @@
                 <span class="dot low"></span><span data-i18n="qualityLow">低</span>
               </div>
             </div>
+            <div id="previewCategoryStats" class="preview-category-stats hidden"></div>
             <div id="previewList" class="preview-list"></div>
           </div>
         </div>

@@ -2637,6 +2637,15 @@ ${p.sourceContext ? `
   showImportModal() {
     document.getElementById('importModal').classList.remove('hidden');
     document.getElementById('importData').value = '';
+    document.getElementById('importUrlInput').value = '';
+    document.getElementById('urlPreview').classList.add('hidden');
+    document.getElementById('previewCount').innerText = '0';
+    document.getElementById('previewAvgScore').innerText = '-';
+    document.getElementById('previewCategoryStats').classList.add('hidden');
+    document.getElementById('previewCategoryStats').innerHTML = '';
+    document.getElementById('previewList').innerHTML = '';
+    this.importedPromptsCache = [];
+    this.filteredImportCache = [];
     this.switchImportTab('paste');
   }
 
@@ -2780,7 +2789,7 @@ ${p.sourceContext ? `
 
     this.filteredImportCache = this.importedPromptsCache
       .filter(p => p.score >= minScore)
-      .sort((a, b) => b.score - a.score); // Sort high score first
+      .sort((a, b) => b.score - a.score);
 
     const previewList = document.getElementById('previewList');
     previewList.innerHTML = '';
@@ -2799,6 +2808,31 @@ ${p.sourceContext ? `
            `;
       previewList.appendChild(div);
     });
+
+    const avgScore = this.filteredImportCache.length > 0
+      ? Math.round(this.filteredImportCache.reduce((sum, p) => sum + p.score, 0) / this.filteredImportCache.length)
+      : 0;
+    document.getElementById('previewAvgScore').innerText = avgScore;
+
+    const categoryStats = document.getElementById('previewCategoryStats');
+    const categoryCount = {};
+    this.filteredImportCache.forEach(p => {
+      const cat = p.category || 'Uncategorized';
+      categoryCount[cat] = (categoryCount[cat] || 0) + 1;
+    });
+
+    const sortedCategories = Object.entries(categoryCount)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8);
+
+    if (sortedCategories.length > 0) {
+      categoryStats.innerHTML = sortedCategories.map(([cat, count]) =>
+        `<span class="category-stat"><span class="category-name">${this.escapeHtml(cat)}</span><span class="category-count">${count}</span></span>`
+      ).join('');
+      categoryStats.classList.remove('hidden');
+    } else {
+      categoryStats.classList.add('hidden');
+    }
 
     document.getElementById('previewCount').innerText = this.filteredImportCache.length;
     document.getElementById('urlPreview').classList.remove('hidden');
@@ -2845,6 +2879,9 @@ ${p.sourceContext ? `
       content: p.prompt,
       category: p.category || 'Imported',
       tags: p.tags || [],
+      shortcut: p.shortcut || '',
+      favorite: p.favorite || false,
+      variables: p.variables || [],
       usageCount: 0,
       lastUsed: Date.now(),
       pinned: false,
