@@ -1177,6 +1177,8 @@ class AIPromptManager {
   }
 
   hidePromptPicker() {
+    this.hideHoverPreview();
+    clearTimeout(this._hoverTimer);
     const picker = document.getElementById('ai-prompt-picker');
     if (picker) picker.remove();
     this.pickerVisible = false;
@@ -1349,8 +1351,71 @@ class AIPromptManager {
 
     picker.querySelector('.apm-list').addEventListener('click', (e) => {
       const item = e.target.closest('.apm-item');
-      if (item) this.selectPrompt(item.dataset.id);
+      if (item) {
+        this.hideHoverPreview();
+        this.selectPrompt(item.dataset.id);
+      }
     });
+
+    // Hover preview with 200ms delay
+    this._hoverTimer = null;
+    this._hoverCard = null;
+
+    picker.querySelector('.apm-list').addEventListener('mouseover', (e) => {
+      const item = e.target.closest('.apm-item');
+      if (!item) return;
+      clearTimeout(this._hoverTimer);
+      this._hoverTimer = setTimeout(() => {
+        this.showHoverPreview(item);
+      }, 200);
+    });
+
+    picker.querySelector('.apm-list').addEventListener('mouseout', (e) => {
+      const item = e.target.closest('.apm-item');
+      if (!item) return;
+      clearTimeout(this._hoverTimer);
+      this.hideHoverPreview();
+    });
+  }
+
+  showHoverPreview(item) {
+    this.hideHoverPreview();
+    const prompt = this.prompts.find(p => p.id === item.dataset.id);
+    if (!prompt) return;
+
+    const card = document.createElement('div');
+    card.className = 'apm-hover-preview';
+    card.textContent = prompt.content;
+
+    document.body.appendChild(card);
+    this._hoverCard = card;
+
+    // Position relative to item
+    const rect = item.getBoundingClientRect();
+    let left = rect.right + 8;
+    let top = rect.top;
+
+    // Adjust if overflowing right edge
+    if (left + 400 > window.innerWidth) {
+      left = rect.left - 400 - 8;
+      if (left < 0) left = rect.left;
+    }
+
+    // Adjust if overflowing bottom edge
+    if (top + 300 > window.innerHeight) {
+      top = window.innerHeight - 300 - 8;
+      if (top < 0) top = 8;
+    }
+
+    card.style.left = left + 'px';
+    card.style.top = top + 'px';
+  }
+
+  hideHoverPreview() {
+    if (this._hoverCard) {
+      this._hoverCard.remove();
+      this._hoverCard = null;
+    }
   }
 
   // --- Selection Floating Toolbar ---
