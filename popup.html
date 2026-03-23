@@ -370,6 +370,19 @@
               <option value="obsidian" data-i18n="obsidianSync">Obsidian Vault (WebDAV)</option>
               <option value="obsidian-local" data-i18n="obsidianLocalSync">Obsidian Local (Plugin)</option>
             </select>
+            <!-- Sync Status Indicator -->
+            <div id="syncStatusIndicator" class="sync-status-indicator hidden">
+              <span id="syncStatusText" class="sync-status-text">○ 未同步</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chrome Sync Config -->
+        <div class="settings-card sync-config-panel hidden" id="chromeSyncContainer">
+          <div class="settings-group-vertical">
+            <div class="settings-actions">
+              <button id="forceSyncChromeBtn" class="btn btn-secondary btn-small" data-i18n="forceSyncChrome">立刻同步</button>
+            </div>
           </div>
         </div>
 

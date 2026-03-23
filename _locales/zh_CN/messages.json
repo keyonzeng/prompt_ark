@@ -196,5 +196,11 @@
   },
   "imagePromptError": {
     "message": "分析图片失败，请重试"
+  },
+  "forceSyncChrome": {
+    "message": "立刻同步"
+  },
+  "MSG_SYNC_SUCCESS": {
+    "message": "Chrome 同步成功"
   }
 }

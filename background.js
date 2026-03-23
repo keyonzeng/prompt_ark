@@ -968,6 +968,23 @@ async function handleMessage(message, sendResponse) {
         break;
       }
 
+      case 'FORCE_CHROME_SYNC': {
+        const { updateSyncStatus } = await import('./lib/storage.js');
+        await updateSyncStatus('syncing');
+        try {
+          // Read from chrome.storage.sync and merge to local
+          const { PromptStorage } = await import('./lib/storage.js');
+          const prompts = await PromptStorage.get();
+          await chrome.storage.local.set({ prompts });
+          await updateSyncStatus('synced');
+          sendResponse({ success: true, message: 'MSG_SYNC_SUCCESS' });
+        } catch (e) {
+          await updateSyncStatus('failed', e.message);
+          sendResponse({ success: false, error: e.message });
+        }
+        break;
+      }
+
       case 'FORCE_GIST_SYNC':
       case 'FORCE_WEBDAV_SYNC':
       case 'FORCE_OBSIDIAN_SYNC':

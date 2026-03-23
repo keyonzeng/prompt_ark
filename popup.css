@@ -379,6 +379,21 @@ body::before {
   font-size: 12px;
 }
 
+.sync-status-indicator {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sync-status-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
 .settings-input {
   padding: 7px 10px;
   border-radius: var(--radius-sm);

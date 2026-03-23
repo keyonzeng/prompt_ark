@@ -55,7 +55,14 @@ class PopupManager {
         this.renderHubUserInfo();
       }
     });
-    
+
+    // Listen for sync status changes
+    chrome.runtime.onMessage.addListener((msg) => {
+      if (msg.type === 'SYNC_STATUS_CHANGED') {
+        this.renderSyncStatus(msg.status);
+      }
+    });
+
     // Listen for async AI enrichment updates from background
     chrome.runtime.onMessage.addListener((msg) => {
       if (msg.type === 'PROMPTS_UPDATED') {
@@ -207,10 +214,74 @@ class PopupManager {
 
   toggleSyncUI(backend) {
     document.querySelectorAll('.sync-config-panel').forEach(el => el.classList.add('hidden'));
+    if (backend === 'chrome') document.getElementById('chromeSyncContainer')?.classList.remove('hidden');
     if (backend === 'gist') document.getElementById('gistIdContainer')?.classList.remove('hidden');
     if (backend === 'webdav') document.getElementById('webdavContainer')?.classList.remove('hidden');
     if (backend === 'obsidian') document.getElementById('obsidianContainer')?.classList.remove('hidden');
     if (backend === 'obsidian-local') document.getElementById('obsidianLocalContainer')?.classList.remove('hidden');
+
+    const indicator = document.getElementById('syncStatusIndicator');
+    if (indicator) {
+      if (backend === 'none') {
+        indicator.classList.add('hidden');
+      } else {
+        indicator.classList.remove('hidden');
+        this.loadSyncStatus();
+      }
+    }
+  }
+
+  async loadSyncStatus() {
+    const result = await chrome.storage.local.get('syncStatus');
+    this.renderSyncStatus(result.syncStatus);
+  }
+
+  renderSyncStatus(status) {
+    const indicator = document.getElementById('syncStatusIndicator');
+    const textEl = document.getElementById('syncStatusText');
+    if (!indicator || !textEl) return;
+
+    const backend = document.getElementById('syncBackendSelect')?.value;
+    if (backend === 'none') {
+      indicator.classList.add('hidden');
+      return;
+    }
+    indicator.classList.remove('hidden');
+
+    if (!status || status.state === 'idle') {
+      textEl.textContent = '○ 未同步';
+      return;
+    }
+
+    if (status.state === 'syncing') {
+      textEl.textContent = '◐ 同步中...';
+      return;
+    }
+
+    if (status.state === 'synced' && status.lastSyncTime) {
+      const ago = this.getRelativeTime(status.lastSyncTime);
+      textEl.textContent = `● 已同步 (${ago})`;
+      return;
+    }
+
+    if (status.state === 'failed') {
+      textEl.textContent = '● 同步失败';
+      return;
+    }
+
+    textEl.textContent = '○ 未同步';
+  }
+
+  getRelativeTime(timestamp) {
+    const diff = Date.now() - timestamp;
+    const seconds = Math.floor(diff / 1000);
+    if (seconds < 60) return '刚刚';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes} 分钟前`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} 小时前`;
+    const days = Math.floor(hours / 24);
+    return `${days} 天前`;
   }
 
   async saveSettings() {
@@ -265,6 +336,12 @@ class PopupManager {
       obsidianLocalPort: parseInt(document.getElementById('obsidianLocalPortInput')?.value) || 27123,
       obsidianLocalApiKey: document.getElementById('obsidianLocalApiKeyInput')?.value?.trim() || ''
     });
+
+    // Reset sync status when backend changes
+    await chrome.storage.local.set({
+      syncStatus: { state: 'idle', backend: syncBackend }
+    });
+    this.renderSyncStatus({ state: 'idle', backend: syncBackend });
     
     // Save Image Prompt settings
     const imagePromptEnabled = document.getElementById('imagePromptEnabled')?.checked || false;
@@ -918,6 +995,30 @@ ${p.sourceContext ? `
 
     // Sync Backend select
     document.getElementById('syncBackendSelect')?.addEventListener('change', (e) => this.toggleSyncUI(e.target.value));
+
+    document.getElementById('forceSyncChromeBtn')?.addEventListener('click', async (e) => {
+      const btn = e.target;
+      const originalText = btn.textContent;
+      btn.textContent = 'Syncing...';
+      btn.disabled = true;
+
+      const resp = await chrome.runtime.sendMessage({ type: 'FORCE_CHROME_SYNC' });
+
+      btn.textContent = originalText;
+      btn.disabled = false;
+
+      if (resp.success) {
+        this.showToast(i18n.t(resp.message) || resp.message || 'Chrome Sync Successful');
+        await this.loadPrompts();
+        this.currentPage = 1;
+        this.renderCategories();
+        this.renderPrompts();
+      } else {
+        const errorKey = resp.error || 'Unknown';
+        const errorMsg = i18n.t(errorKey) || errorKey;
+        this.showToast('❌ ' + errorMsg, 4000);
+      }
+    });
 
     document.getElementById('forceSyncGistBtn')?.addEventListener('click', async (e) => {
       const btn = e.target;

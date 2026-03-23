@@ -196,5 +196,11 @@
   },
   "imagePromptError": {
     "message": "Failed to analyze image, please try again"
+  },
+  "forceSyncChrome": {
+    "message": "Sync Now"
+  },
+  "MSG_SYNC_SUCCESS": {
+    "message": "Chrome Sync Successful"
   }
 }
