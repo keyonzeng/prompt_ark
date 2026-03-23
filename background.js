@@ -444,7 +444,7 @@ async function handleMessage(message, sendResponse) {
           content: existing?.content || '',
           timestamp: Date.now()
         };
-        const updatedVersions = [newVersion, ...versions].slice(0, 20);
+        const updatedVersions = [newVersion, ...versions].slice(0, 10);
 
         const updatedPrompt = {
           ...(existing || {}),
@@ -849,6 +849,15 @@ async function handleMessage(message, sendResponse) {
         if (target) {
           const version = target.versions?.find(v => v.versionId === message.versionId);
           if (version) {
+            // Save current state as new version before restoring (audit trail)
+            const currentVersion = {
+              versionId: crypto.randomUUID(),
+              content: target.content,
+              timestamp: Date.now()
+            };
+            target.versions = [currentVersion, ...(target.versions || [])].slice(0, 10);
+            
+            // Restore the selected version
             target.content = version.content;
             target.variables = extractVariables(version.content);
             target.updatedAt = Date.now();
