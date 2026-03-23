@@ -405,7 +405,6 @@ class AIPromptManager {
     return deduped.join('\n').substring(0, 5000);
   }
 
-  // Capture current page context and instantly Smart Convert it
   async capturePageContext() {
     // Exclude extension-injected DOM (Prompt Picker, selection toolbar, slash dropdown)
     const article = document.querySelector('article') || document.querySelector('main');
@@ -422,22 +421,20 @@ class AIPromptManager {
 
     const pageText = AIPromptManager.cleanExtractedText(rawText);
 
-    if (!pageText) {
-      this.showNotification('❌ ' + this.msg('noPageText', 'No readable text found on page'), 'error');
-      return;
-    }
-
-    this._handleSmartConvertStatus('start');
     try {
-      const resp = await chrome.runtime.sendMessage({ type: 'SMART_CONVERT_SELECTION', text: pageText, pageTitle: document.title, pageUrl: location.href });
-      if (resp?.success) {
-        this._handleSmartConvertStatus('success', resp.title);
-      } else {
-        this._handleSmartConvertStatus('error');
-      }
+      await chrome.runtime.sendMessage({
+        type: 'CAPTURE_PAGE_CONTEXT',
+        context: {
+          page_title: document.title || '',
+          page_url: location.href || '',
+          page_text: pageText || '',
+          selected_text: window.getSelection()?.toString()?.trim() || ''
+        }
+      });
+      this.showNotification('✅ ' + this.msg('contextCaptured', 'Context captured'), 'success');
     } catch (e) {
-      console.error('[Prompt Ark] Auto-convert failed:', e);
-      this._handleSmartConvertStatus('error');
+      console.error('[Prompt Ark] Context capture failed:', e);
+      this.showNotification('❌ ' + this.msg('contextCaptureFailed', 'Failed to capture context'), 'error');
     }
   }
 
