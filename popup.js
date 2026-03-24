@@ -574,7 +574,7 @@ class PopupManager {
     const pageItems = filtered.slice(startIdx, startIdx + this.pageSize);
 
     container.innerHTML = pageItems.map(p => `
-      <div class="prompt-item" data-id="${p.id}">
+      <div class="prompt-item ${this.shareManager.isPackMode ? 'selectable' : ''}" data-id="${p.id}">
         <div class="prompt-main">
           <div class="prompt-header">
             <div class="prompt-title" title="${this.escapeHtml(p.title)}">${this.escapeHtml(p.title)}</div>
@@ -793,7 +793,7 @@ ${p.sourceContext ? `
       }
 
       // Selection mode: toggle checkbox instead of normal actions
-      if (this._packMode) {
+      if(this.shareManager.isPackMode){
         item.classList.toggle('selected');
         this._updatePackCount();
         return;
