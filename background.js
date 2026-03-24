@@ -110,37 +110,56 @@ async function handlePendingIntent() {
         message: `Your prompt pack "${intent.promptData.packTitle}" is now live on Hub.`
       });
     } else if (intent.action === 'SHARE_TO_PLATFORM') {
-      const { promptData, platform } = intent;
+      const { promptData } = intent;
+      const platform = promptData.platform;
       const resp = await HubClient.publishPrompt(promptData, 'unlisted');
       
       const shareUrl = resp.url;
       const shareTitle = promptData.title || 'AI Prompt';
+      const content = promptData.content || '';
       
-      const fallbackText = buildFallbackText(platform, shareTitle, shareUrl, promptData);
-      
+      // Auto-inject platforms: use shareToSocialPlatform (which calls generateShareText internally)
       if (platform === 'zhihu' || platform === 'wechat' || platform === 'xiaohongshu') {
+        const fallbackText = buildFallbackText(platform, shareTitle, shareUrl, promptData);
         await shareToSocialPlatform({
-          content: promptData.content || '',
+          content,
           title: shareTitle,
           url: shareUrl,
           platform,
           fallbackText,
         }, () => {});
-      } else if (platform === 'twitter') {
-        const tweetText = fallbackText || `${shareTitle}\n\n🔗 ${shareUrl}`;
-        await chrome.tabs.create({ url: `https://x.com/intent/tweet?text=${encodeURIComponent(tweetText)}` });
-      } else if (platform === 'reddit') {
-        const redditBody = fallbackText || `${shareTitle}\n\n🔗 ${shareUrl}`;
-        await chrome.tabs.create({ url: `https://www.reddit.com/submit?type=TEXT&title=${encodeURIComponent(shareTitle)}` });
-        await chrome.tabs.query({ active: true, currentWindow: true }).then(tabs => {
-          if (tabs[0]) chrome.tabs.sendMessage(tabs[0].id, { type: 'COPY_TO_CLIPBOARD', text: redditBody });
-        });
-      } else if (platform === 'linkedin') {
-        const linkedinText = fallbackText || `${shareTitle}\n\n🔗 ${shareUrl}`;
-        await chrome.tabs.create({ url: 'https://www.linkedin.com/feed/' });
-        await chrome.tabs.query({ active: true, currentWindow: true }).then(tabs => {
-          if (tabs[0]) chrome.tabs.sendMessage(tabs[0].id, { type: 'COPY_TO_CLIPBOARD', text: linkedinText });
-        });
+      } else if (platform === 'twitter' || platform === 'reddit' || platform === 'linkedin') {
+        // URL-based platforms: generate AI share text, fallback to buildFallbackText if failed
+        let shareText = null;
+        try {
+          const aiResult = await generateShareText(content, shareTitle, shareUrl, platform);
+          if (platform === 'reddit') {
+            shareText = aiResult?.body;
+          } else {
+            shareText = aiResult?.text;
+          }
+        } catch (e) {
+          console.warn('[PendingIntent] AI share text generation failed:', e);
+        }
+        
+        // Fallback if AI generation failed
+        if (!shareText) {
+          shareText = buildFallbackText(platform, shareTitle, shareUrl, promptData);
+        }
+        
+        if (platform === 'twitter') {
+          await chrome.tabs.create({ url: `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}` });
+        } else if (platform === 'reddit') {
+          await chrome.tabs.create({ url: `https://www.reddit.com/submit?type=TEXT&title=${encodeURIComponent(shareTitle)}` });
+          await chrome.tabs.query({ active: true, currentWindow: true }).then(tabs => {
+            if (tabs[0]) chrome.tabs.sendMessage(tabs[0].id, { type: 'COPY_TO_CLIPBOARD', text: shareText });
+          });
+        } else if (platform === 'linkedin') {
+          await chrome.tabs.create({ url: 'https://www.linkedin.com/feed/' });
+          await chrome.tabs.query({ active: true, currentWindow: true }).then(tabs => {
+            if (tabs[0]) chrome.tabs.sendMessage(tabs[0].id, { type: 'COPY_TO_CLIPBOARD', text: shareText });
+          });
+        }
       } else if (platform === 'copy') {
         await chrome.tabs.query({ active: true, currentWindow: true }).then(tabs => {
           if (tabs[0]) chrome.tabs.sendMessage(tabs[0].id, { type: 'COPY_TO_CLIPBOARD', text: shareUrl });
