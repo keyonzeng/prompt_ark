@@ -440,21 +440,44 @@ class AIPromptManager {
     }
 
     const pageText = AIPromptManager.cleanExtractedText(rawText);
+    const selectedText = window.getSelection()?.toString()?.trim() || '';
 
     try {
+      // Always capture page context for {{@...}} variables
       await chrome.runtime.sendMessage({
         type: 'CAPTURE_PAGE_CONTEXT',
         context: {
           page_title: document.title || '',
           page_url: location.href || '',
           page_text: pageText || '',
-          selected_text: window.getSelection()?.toString()?.trim() || ''
+          selected_text: selectedText
         }
       });
       this.showNotification('✅ ' + this.msg('contextCaptured', 'Context captured'), 'success');
     } catch (e) {
       console.error('[Prompt Ark] Context capture failed:', e);
       this.showNotification('❌ ' + this.msg('contextCaptureFailed', 'Failed to capture context'), 'error');
+    }
+
+    // Also smart convert if there's selected text
+    if (selectedText && selectedText.length >= 10) {
+      this._handleSmartConvertStatus('start');
+      try {
+        const resp = await chrome.runtime.sendMessage({
+          type: 'SMART_CONVERT_SELECTION',
+          text: selectedText,
+          pageTitle: document.title,
+          pageUrl: location.href
+        });
+        if (resp?.success) {
+          this._handleSmartConvertStatus('success', resp.title);
+        } else {
+          this._handleSmartConvertStatus('error');
+        }
+      } catch (err) {
+        console.error('[Prompt Ark] Smart Convert failed:', err);
+        this._handleSmartConvertStatus('error');
+      }
     }
   }
 
