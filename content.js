@@ -554,7 +554,7 @@ class AIPromptManager {
     window.addEventListener('message', (event) => {
       // Security Check 1: Accept only from Verified Domains (e.g. your GitHub Pages, local dev)
       const verifiedDomains = [
-        'https://keyonzeng.github.io',
+        'https://promptark.oometa.ai',
         'http://127.0.0.1:8080',
         'http://localhost:8080',
         'http://127.0.0.1:5173',
