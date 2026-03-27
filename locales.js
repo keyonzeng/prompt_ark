@@ -141,8 +141,6 @@ export const translations = {
         syncEngineHint: "选择如何跨设备同步你的 Prompt 数据",
         noSync: "不同步（仅本地）",
         noSyncHint: "数据仅保存在当前浏览器，不会上传到任何云端",
-        chromeSync: "Chrome Sync",
-        chromeSyncHint: "通过 Google 账号自动跨设备同步，已内置 LZ 压缩",
         webdavSync: "WebDAV",
         webdavSyncHint: "支持坚果云等国内网盘",
         webdavUrl: "WebDAV 服务器地址",
@@ -284,7 +282,6 @@ export const translations = {
         youtubeVideoPrompt: "YouTube 视频提示词",
         videoAnalysisSaved: "✅ 完整视频分析已保存（含词典 + 分镜）",
         saveFailed: "❌ 保存失败",
-        forceSyncChrome: "立刻同步",
         sourceTextCopied: "源文本已复制",
     },
     en: {
@@ -431,9 +428,6 @@ export const translations = {
         noSync: "No Sync (Local Only)",
         noSyncHint:
             "Data stays in this browser only, nothing uploaded to cloud",
-        chromeSync: "Chrome Sync",
-        chromeSyncHint:
-            "Auto-sync across devices via Google Account, LZ compressed",
         webdavSync: "WebDAV",
         webdavSyncHint: "Works with Jianguoyun, Nextcloud, etc.",
         webdavUrl: "WebDAV Server URL",
@@ -583,7 +577,6 @@ export const translations = {
         youtubeVideoPrompt: "YouTube Video Prompt",
         videoAnalysisSaved: "✅ Complete video analysis saved (with dictionary + storyboard)",
         saveFailed: "❌ Save failed",
-        forceSyncChrome: "Sync Now",
         sourceTextCopied: "Source text copied",
     },
 };

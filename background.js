@@ -549,7 +549,7 @@ async function handleMessage(message, sendResponse) {
       }
 
       case 'GET_I18N_DICT': {
-        const { language: lang } = await chrome.storage.sync.get('language');
+        const { language: lang } = await chrome.storage.local.get('language');
         const locale = lang || (chrome.i18n.getUILanguage().startsWith('zh') ? 'zh_CN' : 'en');
         sendResponse(translations[locale] || translations['en']);
         break;
@@ -560,7 +560,7 @@ async function handleMessage(message, sendResponse) {
         buildContextMenus(getPrompts);
 
         // Broadcast new translation dictionary to all active tabs
-        chrome.storage.sync.get('language').then(({ language }) => {
+        chrome.storage.local.get('language').then(({ language }) => {
           let locale = language || (chrome.i18n.getUILanguage().startsWith('zh') ? 'zh_CN' : 'en');
           const dict = translations[locale] || translations['en'];
           chrome.tabs.query({}, (tabs) => {
@@ -1049,19 +1049,6 @@ async function handleMessage(message, sendResponse) {
 
         await SyncManager.loadConfig();
         sendResponse({ success: true });
-        break;
-      }
-
-      case 'FORCE_CHROME_SYNC': {
-        try {
-          // Read from chrome.storage.sync and merge to local
-          const { PromptStorage } = await import('./lib/storage.js');
-          const prompts = await PromptStorage.get();
-          await chrome.storage.local.set({ prompts });
-          sendResponse({ success: true, message: 'MSG_SYNC_SUCCESS' });
-        } catch (e) {
-          sendResponse({ success: false, error: e.message });
-        }
         break;
       }
 

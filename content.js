@@ -1679,7 +1679,7 @@ class AIPromptManager {
     };
 
     try {
-      chrome.storage.sync.get('language', ({ language }) => {
+      chrome.storage.local.get('language', ({ language }) => {
         if (chrome.runtime.lastError) return;
         const locale = language || (chrome.i18n.getUILanguage().startsWith('zh') ? 'zh_CN' : 'en');
         this.i18nDict = CONTENT_TRANSLATIONS[locale] || CONTENT_TRANSLATIONS['en'];

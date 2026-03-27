@@ -9,7 +9,7 @@ export class I18nManager {
 
   async init() {
     // 从存储中加载语言设置
-    const { language } = await chrome.storage.sync.get('language');
+    const { language } = await chrome.storage.local.get('language');
     
     if (language) {
       this.locale = language;
@@ -29,7 +29,7 @@ export class I18nManager {
   async setLanguage(lang) {
     if (translations[lang]) {
       this.locale = lang;
-      await chrome.storage.sync.set({ language: lang });
+      await chrome.storage.local.set({ language: lang });
       this.notifyListeners();
       return true;
     }

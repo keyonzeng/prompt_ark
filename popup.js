@@ -214,7 +214,6 @@ class PopupManager {
 
   toggleSyncUI(backend) {
     document.querySelectorAll('.sync-config-panel').forEach(el => el.classList.add('hidden'));
-    if (backend === 'chrome') document.getElementById('chromeSyncContainer')?.classList.remove('hidden');
     if (backend === 'webdav') document.getElementById('webdavContainer')?.classList.remove('hidden');
     if (backend === 'obsidian') document.getElementById('obsidianContainer')?.classList.remove('hidden');
   }
@@ -960,30 +959,6 @@ ${p.sourceContext ? `
 
     // Sync Backend select
     document.getElementById('syncBackendSelect')?.addEventListener('change', (e) => this.toggleSyncUI(e.target.value));
-
-    document.getElementById('forceSyncChromeBtn')?.addEventListener('click', async (e) => {
-      const btn = e.target;
-      const originalText = btn.textContent;
-      btn.textContent = 'Syncing...';
-      btn.disabled = true;
-
-      const resp = await chrome.runtime.sendMessage({ type: 'FORCE_CHROME_SYNC' });
-
-      btn.textContent = originalText;
-      btn.disabled = false;
-
-      if (resp.success) {
-        this.showToast(i18n.t(resp.message) || resp.message || 'Chrome Sync Successful');
-        await this.loadPrompts();
-        this.currentPage = 1;
-        this.renderCategories();
-        this.renderPrompts();
-      } else {
-        const errorKey = resp.error || 'Unknown';
-        const errorMsg = i18n.t(errorKey) || errorKey;
-        this.showToast('❌ ' + errorMsg, 4000);
-      }
-    });
 
     document.getElementById('forceSyncWebdavBtn')?.addEventListener('click', async (e) => {
       const btn = e.target;
