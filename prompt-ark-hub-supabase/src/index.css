@@ -1050,6 +1050,38 @@ body::after {
   justify-content: flex-end;
 }
 
+.landing-lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.landing-lang-btn {
+  min-width: 56px;
+  height: 34px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.landing-lang-btn:hover {
+  color: var(--text-primary);
+}
+
+.landing-lang-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+
 .landing-nav-link {
   padding: 10px 16px;
   border: 1px solid var(--border);
@@ -1355,8 +1387,12 @@ body::after {
   }
   .landing-primary-btn,
   .landing-secondary-btn,
-  .landing-nav-link {
+  .landing-nav-link,
+  .landing-lang-toggle {
     width: 100%;
+  }
+  .landing-lang-btn {
+    flex: 1;
   }
   .landing-platform-strip {
     align-items: flex-start;
