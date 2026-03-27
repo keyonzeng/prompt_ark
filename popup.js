@@ -519,9 +519,7 @@ class PopupManager {
                   <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
                 </svg>
               </button>
-              <button class="action-btn p2s-btn" title="${i18n.t('promptToSkill')}">
-                🧩
-              </button>
+              <!-- [DISABLED] <button class="action-btn p2s-btn" title="${i18n.t('promptToSkill')}">🧩</button> -->
               <button class="action-btn insert-btn" title="${i18n.t('insert')}">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M12 5v14M5 12h14"/>
