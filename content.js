@@ -459,13 +459,12 @@ class AIPromptManager {
       this.showNotification('❌ ' + this.msg('contextCaptureFailed', 'Failed to capture context'), 'error');
     }
 
-    // Also smart convert if there's selected text
-    if (selectedText && selectedText.length >= 10) {
+    if (pageText && pageText.length >= 10) {
       this._handleSmartConvertStatus('start');
       try {
         const resp = await chrome.runtime.sendMessage({
           type: 'SMART_CONVERT_SELECTION',
-          text: selectedText,
+          text: pageText,
           pageTitle: document.title,
           pageUrl: location.href
         });
