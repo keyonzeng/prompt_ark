@@ -13,7 +13,7 @@ function extractSection(markdown: string, section: LegalSection) {
   }
 
   const afterMarker = markdown.slice(start + marker.length).trimStart()
-  const nextSectionIndex = afterMarker.search(/^---\s*\n# \//m)
+  const nextSectionIndex = afterMarker.search(/^---\s*\n# /m)
   const sectionBody = nextSectionIndex === -1
     ? afterMarker
     : afterMarker.slice(0, nextSectionIndex)
