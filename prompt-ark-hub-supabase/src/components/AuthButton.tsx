@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { getCurrentPageUrl } from '../lib/site'
 
 interface AuthButtonProps {
   user: { id: string; email?: string; user_metadata?: { avatar_url?: string; name?: string } } | null
@@ -13,7 +14,7 @@ export function AuthButton({ user, onAuthChange }: AuthButtonProps) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin,
+        redirectTo: getCurrentPageUrl(),
         queryParams: {
           access_type: 'offline',
           prompt: 'consent',

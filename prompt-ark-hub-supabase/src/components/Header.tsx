@@ -1,5 +1,5 @@
-import React from 'react'
 import { AuthButton } from './AuthButton'
+import { APP_NAME, EXTENSION_URL } from '../lib/site'
 
 interface HeaderProps {
   user?: any
@@ -15,15 +15,15 @@ export function Header({
       <a href="/" className="hub-logo-link">
         <img 
           src="/icon128.png" 
-          alt="Prompt Ark" 
+          alt={APP_NAME}
           className="hub-logo-icon"
         />
-        <span className="hub-logo-text">Prompt Ark</span>
+        <span className="hub-logo-text">{APP_NAME}</span>
       </a>
       <div className="hub-auth-container">
         <a 
           className="hub-ext-link" 
-          href="https://github.com/keyonzeng/prompt_ark" 
+          href={EXTENSION_URL}
           target="_blank" 
           rel="noopener noreferrer"
         >
