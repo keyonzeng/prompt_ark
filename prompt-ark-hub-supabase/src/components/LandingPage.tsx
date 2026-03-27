@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react'
-import { AuthButton } from './AuthButton'
+import { useEffect } from 'react'
+import { SiteHeader } from './SiteHeader'
+import { SiteFooter } from './SiteFooter'
 import { APP_NAME, EXTENSION_URL, HUB_PATH } from '../lib/site'
+import { useI18n } from '../lib/i18n'
 
 interface LandingPageProps {
   user: any
@@ -8,26 +10,10 @@ interface LandingPageProps {
 }
 
 const platforms = ['ChatGPT', 'Claude', 'Gemini', 'DeepSeek', 'Kimi', 'NotebookLM']
-const HOME_LANG_KEY = 'promptark_home_lang'
-
-function GitHubMark() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="landing-github-icon">
-      <path
-        fill="currentColor"
-        d="M12 2C6.48 2 2 6.58 2 12.23c0 4.52 2.87 8.35 6.84 9.71.5.09.66-.22.66-.49 0-.24-.01-1.03-.01-1.87-2.78.62-3.37-1.22-3.37-1.22-.46-1.19-1.11-1.5-1.11-1.5-.91-.64.07-.63.07-.63 1 .08 1.53 1.06 1.53 1.06.9 1.57 2.36 1.12 2.94.86.09-.67.35-1.12.63-1.38-2.22-.26-4.55-1.14-4.55-5.08 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.31.1-2.74 0 0 .84-.28 2.75 1.05A9.35 9.35 0 0 1 12 6.84c.85 0 1.71.12 2.5.36 1.91-1.33 2.75-1.05 2.75-1.05.55 1.43.2 2.48.1 2.74.64.72 1.03 1.63 1.03 2.75 0 3.95-2.33 4.81-4.56 5.07.36.32.68.96.68 1.95 0 1.41-.01 2.55-.01 2.89 0 .27.17.59.67.49A10.25 10.25 0 0 0 22 12.23C22 6.58 17.52 2 12 2Z"
-      />
-    </svg>
-  )
-}
 
 const landingCopy = {
   en: {
     pageTitle: `${APP_NAME} — Prompt Management for Chrome, Edge, and the Web`,
-    navHub: 'Open Hub',
-    githubLabel: 'GitHub',
-    loginLabel: 'Sign In',
-    logoutLabel: 'Logout',
     eyebrow: 'Official PromptArk Site',
     title: 'Stop losing your best AI prompts.',
     description: `Save, organize, and launch prompts in one click inside ChatGPT, Claude, Gemini, and 20+ other AI platforms. ${APP_NAME} combines a browser extension with an official Hub so prompt reuse, injection, sharing, and sync feel like one product.`,
@@ -93,14 +79,9 @@ const landingCopy = {
       },
     ],
     platformsLabel: 'Supported AI platforms',
-    footer: `${APP_NAME} is an open-source prompt management product for serious AI workflows.`,
   },
   zh: {
     pageTitle: `${APP_NAME} — 面向 Chrome、Edge 与 Web 的提示词管理产品`,
-    navHub: '进入 Hub',
-    githubLabel: 'GitHub',
-    loginLabel: '登录',
-    logoutLabel: '退出登录',
     eyebrow: `${APP_NAME} 官方站点`,
     title: '别再丢失你最好的 AI 提示词。',
     description: `把提示词保存、整理，并一键调用到 ChatGPT、Claude、Gemini 等 20+ AI 平台。${APP_NAME} 将浏览器扩展与官方 Hub 结合起来，让提示词的复用、注入、分享和同步形成完整产品体验。`,
@@ -166,76 +147,20 @@ const landingCopy = {
       },
     ],
     platformsLabel: '支持的 AI 平台',
-    footer: `${APP_NAME} 是一个面向严肃 AI 工作流的开源提示词管理产品。`,
   },
 } as const
 
-type LandingLanguage = keyof typeof landingCopy
-
 export function LandingPage({ user, onAuthChange }: LandingPageProps) {
-  const [language, setLanguage] = useState<LandingLanguage>(() => {
-    const saved = localStorage.getItem(HOME_LANG_KEY)
-    if (saved === 'en' || saved === 'zh') return saved
-    return 'en'
-  })
-
+  const { language } = useI18n()
   const copy = landingCopy[language]
 
   useEffect(() => {
-    localStorage.setItem(HOME_LANG_KEY, language)
-    document.documentElement.lang = language === 'zh' ? 'zh-CN' : 'en'
     document.title = copy.pageTitle
   }, [copy.pageTitle, language])
 
   return (
     <div className="landing-shell">
-      <header className="landing-header">
-        <a href="/" className="landing-brand">
-          <img src="/icon128.png" alt={APP_NAME} className="landing-brand-icon" />
-          <span className="landing-brand-text">{APP_NAME}</span>
-        </a>
-
-        <div className="landing-header-actions">
-          <a
-            href={EXTENSION_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="landing-github-link"
-            aria-label={copy.githubLabel}
-            title={copy.githubLabel}
-          >
-            <GitHubMark />
-            <span>{copy.githubLabel}</span>
-          </a>
-          <div className="landing-lang-toggle" role="group" aria-label="Homepage language switcher">
-            <button
-              type="button"
-              className={`landing-lang-btn ${language === 'en' ? 'active' : ''}`}
-              onClick={() => setLanguage('en')}
-            >
-              EN
-            </button>
-            <button
-              type="button"
-              className={`landing-lang-btn ${language === 'zh' ? 'active' : ''}`}
-              onClick={() => setLanguage('zh')}
-            >
-              中文
-            </button>
-          </div>
-          <a href={HUB_PATH} className="landing-nav-link">
-            {copy.navHub}
-          </a>
-          <div className="landing-auth-slot">
-            <AuthButton
-              user={user}
-              onAuthChange={onAuthChange}
-              loginLabel={copy.loginLabel}
-              logoutLabel={copy.logoutLabel}
-            />
-          </div>
-        </div>
-      </header>
+      <SiteHeader user={user} onAuthChange={onAuthChange} />
 
       <main className="landing-main">
         <section className="landing-hero">
@@ -335,9 +260,7 @@ export function LandingPage({ user, onAuthChange }: LandingPageProps) {
         </section>
       </main>
 
-      <footer className="landing-footer">
-        <p>{copy.footer}</p>
-      </footer>
+      <SiteFooter />
     </div>
   )
 }

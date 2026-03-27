@@ -14,8 +14,12 @@ import {
   Loading,
   Pagination,
   LandingPage,
+  LegalPage,
+  SiteFooter,
 } from './components'
-import { APP_NAME, HUB_PATH, EXTENSION_URL, getHubUrl } from './lib/site'
+import { APP_NAME, HUB_PATH, getHubUrl } from './lib/site'
+import { I18nProvider } from './lib/i18n'
+import type { LegalSection } from './lib/legal'
 
 type SortOption = 'trending' | 'newest' | 'topRated' | 'quality'
 
@@ -27,6 +31,12 @@ function normalizePath(pathname: string) {
     return pathname.slice(0, -1)
   }
   return pathname
+}
+
+function getLegalSection(pathname: string): LegalSection | null {
+  if (pathname === '/privacy') return 'privacy'
+  if (pathname === '/terms') return 'terms'
+  return null
 }
 
 interface HubContentProps {
@@ -418,10 +428,7 @@ function HubContent({ user, onAuthChange }: HubContentProps) {
         </>
       )}
 
-      <footer className="hub-footer">
-        <p>{APP_NAME} Hub — Open source community prompt library</p>
-        <p><a href={EXTENSION_URL} target="_blank" rel="noopener noreferrer">GitHub</a> · Made with ❤️ by the {APP_NAME} community</p>
-      </footer>
+      <SiteFooter />
 
       <DetailModal 
         prompt={selectedPrompt} 
@@ -445,13 +452,23 @@ function HubContent({ user, onAuthChange }: HubContentProps) {
 }
 
 export default function App() {
+  return (
+    <I18nProvider>
+      <AppShell />
+    </I18nProvider>
+  )
+}
+
+function AppShell() {
   const [user, setUser] = useState<any>(null)
-  const isHubRoute = normalizePath(window.location.pathname) === HUB_PATH
+  const pathname = normalizePath(window.location.pathname)
+  const isHubRoute = pathname === HUB_PATH
+  const legalSection = getLegalSection(pathname)
 
   useEffect(() => {
-    document.title = isHubRoute
-      ? `${APP_NAME} Hub — Discover & Install AI Prompts`
-      : `${APP_NAME} — Prompt Management for Chrome, Edge, and the Web`
+    if (isHubRoute) {
+      document.title = `${APP_NAME} Hub — Discover & Install AI Prompts`
+    }
   }, [isHubRoute])
 
   useEffect(() => {
@@ -472,7 +489,9 @@ export default function App() {
 
   return (
     <ToastProvider>
-      {isHubRoute ? (
+      {legalSection ? (
+        <LegalPage section={legalSection} user={user} onAuthChange={setUser} />
+      ) : isHubRoute ? (
         <HubContent user={user} onAuthChange={setUser} />
       ) : (
         <LandingPage user={user} onAuthChange={setUser} />
