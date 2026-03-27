@@ -172,12 +172,12 @@ class PopupManager {
     const ghInput = document.getElementById('githubTokenInput');
     if (ghInput && ghResp.token) ghInput.value = ghResp.token;
 
-    // Load OpenClaw settings
-    const ocResp = await chrome.runtime.sendMessage({ type: 'GET_OPENCLAW_SETTINGS' });
-    const ocEndpointInput = document.getElementById('openclawEndpointInput');
-    if (ocEndpointInput && ocResp.endpoint) ocEndpointInput.value = ocResp.endpoint;
-    const ocApiKeyInput = document.getElementById('openclawApiKeyInput');
-    if (ocApiKeyInput && ocResp.apiKey) ocApiKeyInput.value = ocResp.apiKey;
+    // [DISABLED] Load OpenClaw settings
+    // const ocResp = await chrome.runtime.sendMessage({ type: 'GET_OPENCLAW_SETTINGS' });
+    // const ocEndpointInput = document.getElementById('openclawEndpointInput');
+    // if (ocEndpointInput && ocResp.endpoint) ocEndpointInput.value = ocResp.endpoint;
+    // const ocApiKeyInput = document.getElementById('openclawApiKeyInput');
+    // if (ocApiKeyInput && ocResp.apiKey) ocApiKeyInput.value = ocResp.apiKey;
 
     // Load Sync Settings
     const syncResp = await chrome.runtime.sendMessage({ type: 'GET_SYNC_SETTINGS' });
@@ -234,14 +234,14 @@ class PopupManager {
       await chrome.runtime.sendMessage({ type: 'SAVE_GITHUB_TOKEN', token: ghToken });
     }
 
-    // Save OpenClaw settings
-    const openclawEndpoint = document.getElementById('openclawEndpointInput')?.value?.trim() || '';
-    const openclawApiKey = document.getElementById('openclawApiKeyInput')?.value?.trim() || '';
-    await chrome.runtime.sendMessage({ 
-      type: 'SAVE_OPENCLAW_SETTINGS', 
-      endpoint: openclawEndpoint,
-      apiKey: openclawApiKey
-    });
+    // [DISABLED] Save OpenClaw settings
+    // const openclawEndpoint = document.getElementById('openclawEndpointInput')?.value?.trim() || '';
+    // const openclawApiKey = document.getElementById('openclawApiKeyInput')?.value?.trim() || '';
+    // await chrome.runtime.sendMessage({ 
+    //   type: 'SAVE_OPENCLAW_SETTINGS', 
+    //   endpoint: openclawEndpoint,
+    //   apiKey: openclawApiKey
+    // });
 
     // Save Sync Settings
     const syncBackend = document.getElementById('syncBackendSelect')?.value || 'none';
@@ -766,17 +766,17 @@ ${p.sourceContext ? `
       if (e.target.closest('.insert-btn')) this.insertPrompt(id);
       else if (e.target.closest('.fav-btn')) this.toggleFavorite(id);
       else if (e.target.closest('.share-btn')) this.sharePrompt(id);
-      else if (e.target.closest('.p2s-btn')) this.pushToSkill(id, e.target.closest('.p2s-btn'));
+      // [DISABLED] else if (e.target.closest('.p2s-btn')) this.pushToSkill(id, e.target.closest('.p2s-btn'));
       else if (e.target.closest('.edit-btn')) this.editPrompt(id);
       else if (e.target.closest('.copy-btn')) this.copyPrompt(id);
       else if (e.target.closest('.translate-list-btn')) this.showTranslatePopover(id, e.target.closest('.translate-list-btn'));
       else if (e.target.closest('.delete-btn')) { this.deletePrompt(id); }
     });
 
-    // Skill mode toggle
-    document.getElementById('skillModeToggle')?.addEventListener('change', (e) => {
-      document.getElementById('skillFields').classList.toggle('hidden', !e.target.checked);
-    });
+    // [DISABLED] Skill mode toggle
+    // document.getElementById('skillModeToggle')?.addEventListener('change', (e) => {
+    //   document.getElementById('skillFields').classList.toggle('hidden', !e.target.checked);
+    // });
 
     // Knowledge snippets: add button
     document.getElementById('addSnippetBtn')?.addEventListener('click', () => {
@@ -1088,10 +1088,10 @@ ${p.sourceContext ? `
     document.getElementById('youtubePromptBtn')?.addEventListener('click', () => this.showYoutubeModal());
     document.getElementById('closeYoutubeModal')?.addEventListener('click', () => this.hideYoutubeModal());
 
-    // --- Skill Manager ---
-    document.getElementById('skillManagerBtn')?.addEventListener('click', () => this.showSkillManager());
-    document.getElementById('closeSkillManagerModal')?.addEventListener('click', () => this.hideSkillManager());
-    document.getElementById('skillBackBtn')?.addEventListener('click', () => this.backToSkillList());
+    // [DISABLED] --- Skill Manager ---
+    // document.getElementById('skillManagerBtn')?.addEventListener('click', () => this.showSkillManager());
+    // document.getElementById('closeSkillManagerModal')?.addEventListener('click', () => this.hideSkillManager());
+    // document.getElementById('skillBackBtn')?.addEventListener('click', () => this.backToSkillList());
     document.getElementById('youtubeGenerateBtn')?.addEventListener('click', () => this.generateYoutubePrompt());
     document.getElementById('youtubeSaveBtn')?.addEventListener('click', () => this.saveYoutubePrompt());
     document.getElementById('youtubeEditSaveBtn')?.addEventListener('click', () => this.editYoutubePrompt());

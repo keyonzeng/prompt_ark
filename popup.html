@@ -270,6 +270,7 @@
               data-i18n-placeholder="githubTokenPlaceholder" placeholder="ghp_xxxxxxxxxxxx">
           </div>
 
+          <!-- [DISABLED] OpenClaw Agent (P2S) settings - kept for future use
           <div class="settings-section-header" style="margin-top: 16px;">
             <label data-i18n="openclawSettings">🤖 OpenClaw Agent (P2S)</label>
           </div>
@@ -282,6 +283,7 @@
             <input type="password" id="openclawApiKeyInput" class="settings-input"
               placeholder="API Key (Optional)">
           </div>
+          -->
 
           <div class="settings-section-header" style="margin-top: 16px;">
             <label data-i18n="imagePromptFeature">🖼️ 图像生成提示词</label>
@@ -439,7 +441,7 @@
       <button id="packBtn" class="btn btn-secondary btn-small" data-i18n-title="sharePromptPack">📦</button>
       <button id="youtubePromptBtn" class="btn btn-secondary btn-small"
         data-i18n-title="videoToPrompt">🎬</button>
-      <button id="skillManagerBtn" class="btn btn-secondary btn-small" data-i18n-title="skillManager">🧩</button>
+      <!-- [DISABLED] <button id="skillManagerBtn" class="btn btn-secondary btn-small" data-i18n-title="skillManager">🧩</button> -->
       <span class="shortcut-hint" data-i18n="shortcutHint">Ctrl+Shift+P 快捷插入</span>
     </footer>
   </div>
@@ -473,7 +475,7 @@
           <input type="text" id="shortcutInput" placeholder="例如 code-review">
         </div>
 
-        <!-- Skill Mode Section -->
+        <!-- [DISABLED] Skill Mode Section
         <div class="skill-mode-section">
           <div class="skill-toggle-row">
             <label class="skill-toggle-label">
@@ -501,11 +503,11 @@
                 <button type="button" id="addSnippetBtn" class="btn-icon-small" data-i18n-title="addSnippet">+</button>
               </label>
               <div id="snippetsList" class="snippets-list">
-                <!-- Dynamically rendered -->
               </div>
             </div>
           </div>
         </div>
+        -->
 
 
         <div class="form-group">
@@ -864,14 +866,13 @@
 
   <script src="lib/marked.min.js"></script>
 
-  <!-- Skill Manager Modal -->
+  <!-- [DISABLED] Skill Manager Modal
   <div id="skillManagerModal" class="modal hidden">
     <div class="modal-content skill-manager-modal">
       <div class="modal-header">
         <h2>🧩 Skill Manager</h2>
         <button class="modal-close" id="closeSkillManagerModal">&times;</button>
       </div>
-      <!-- List View -->
       <div id="skillListView" class="skill-manager-body">
         <div id="skillEmptyState" class="skill-empty hidden">
           <div class="skill-empty-icon">🧩</div>
@@ -880,7 +881,6 @@
         </div>
         <div id="skillListContent" class="skill-list"></div>
       </div>
-      <!-- Detail View -->
       <div id="skillDetailView" class="skill-detail hidden">
         <button class="btn btn-secondary btn-small skill-back-btn" id="skillBackBtn">← Back</button>
         <h3 id="skillDetailTitle"></h3>
@@ -888,6 +888,7 @@
       </div>
     </div>
   </div>
+  -->
 
 
 

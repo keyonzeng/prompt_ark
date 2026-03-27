@@ -15,7 +15,7 @@ import { translatePromptWithAI } from './lib/ai/translate.js';
 import { smartConvertWithAI } from './lib/ai/smart-convert.js';
 import { asyncEnrichPrompt as _asyncEnrichPrompt } from './lib/ai/enrich.js';
 import { generateVideoPromptWithAI } from './lib/ai/video-prompt.js';
-import { generateSkillWithAI, pushSkillToOpenClaw } from './lib/ai/p2s-forge.js';
+// [DISABLED] import { generateSkillWithAI, pushSkillToOpenClaw } from './lib/ai/p2s-forge.js';
 import { generateShareText, shareToSocialPlatform, generateArticleShareText, ARTICLE_SHARE_PLATFORMS, SOCIAL_EDITORS, buildFallbackText } from './lib/ai/share.js';
 import { buildContextMenus, handleContextMenuClick } from './lib/context-menu.js';
 import { initSupabase, initSupabaseFromStorage, isAuthenticated as isSupabaseAuthenticated, from as supabaseFrom, signOut } from './lib/supabase/client.js';
@@ -368,17 +368,17 @@ async function handleMessage(message, sendResponse) {
         sendResponse({ success: true, prompts: await getPrompts() });
         break;
 
-      case 'GET_OPENCLAW_SETTINGS':
-        const ocSettings = await LocalStorage.get('openclaw') || { endpoint: '', apiKey: '' };
-        if (ocSettings.apiKey) ocSettings.apiKey = await decrypt(ocSettings.apiKey);
-        sendResponse(ocSettings);
-        break;
+      // [DISABLED] case 'GET_OPENCLAW_SETTINGS':
+      //   const ocSettings = await LocalStorage.get('openclaw') || { endpoint: '', apiKey: '' };
+      //   if (ocSettings.apiKey) ocSettings.apiKey = await decrypt(ocSettings.apiKey);
+      //   sendResponse(ocSettings);
+      //   break;
 
-      case 'SAVE_OPENCLAW_SETTINGS':
-        const encApiKey = message.apiKey ? await encrypt(message.apiKey) : '';
-        await LocalStorage.set('openclaw', { endpoint: message.endpoint, apiKey: encApiKey });
-        sendResponse({ success: true });
-        break;
+      // [DISABLED] case 'SAVE_OPENCLAW_SETTINGS':
+      //   const encApiKey = message.apiKey ? await encrypt(message.apiKey) : '';
+      //   await LocalStorage.set('openclaw', { endpoint: message.endpoint, apiKey: encApiKey });
+      //   sendResponse({ success: true });
+      //   break;
 
       case 'GET_IMAGE_PROMPT_SETTINGS':
         sendResponse(await LocalStorage.get('imagePrompt') || { enabled: false, imageModelId: '' });
@@ -396,47 +396,47 @@ async function handleMessage(message, sendResponse) {
         break;
 
         
-      case 'GENERATE_SKILL': {
-        const skillPayload = await generateSkillWithAI(message.promptData);
-        const skills = await LocalStorage.get('skills') || [];
-        const skillRecord = {
-          id: crypto.randomUUID(),
-          skill_name: skillPayload.skill_name,
-          description: skillPayload.description || '',
-          source_prompt_id: message.promptData.id,
-          source_prompt_title: message.promptData.title || '',
-          files: skillPayload.files,
-          pushed: false,
-          createdAt: Date.now()
-        };
-        skills.unshift(skillRecord);
-        await LocalStorage.set('skills', skills);
-        sendResponse({ success: true, skill: skillRecord });
-        break;
-      }
+      // [DISABLED] case 'GENERATE_SKILL': {
+      //   const skillPayload = await generateSkillWithAI(message.promptData);
+      //   const skills = await LocalStorage.get('skills') || [];
+      //   const skillRecord = {
+      //     id: crypto.randomUUID(),
+      //     skill_name: skillPayload.skill_name,
+      //     description: skillPayload.description || '',
+      //     source_prompt_id: message.promptData.id,
+      //     source_prompt_title: message.promptData.title || '',
+      //     files: skillPayload.files,
+      //     pushed: false,
+      //     createdAt: Date.now()
+      //   };
+      //   skills.unshift(skillRecord);
+      //   await LocalStorage.set('skills', skills);
+      //   sendResponse({ success: true, skill: skillRecord });
+      //   break;
+      // }
 
-      case 'GET_SKILLS':
-        sendResponse({ success: true, skills: await LocalStorage.get('skills') || [] });
-        break;
+      // [DISABLED] case 'GET_SKILLS':
+      //   sendResponse({ success: true, skills: await LocalStorage.get('skills') || [] });
+      //   break;
 
-      case 'PUSH_SKILL': {
-        const allSkills = await LocalStorage.get('skills') || [];
-        const target = allSkills.find(s => s.id === message.skillId);
-        if (!target) throw new Error('Skill not found');
-        await pushSkillToOpenClaw(target);
-        target.pushed = true;
-        await LocalStorage.set('skills', allSkills);
-        sendResponse({ success: true });
-        break;
-      }
+      // [DISABLED] case 'PUSH_SKILL': {
+      //   const allSkills = await LocalStorage.get('skills') || [];
+      //   const target = allSkills.find(s => s.id === message.skillId);
+      //   if (!target) throw new Error('Skill not found');
+      //   await pushSkillToOpenClaw(target);
+      //   target.pushed = true;
+      //   await LocalStorage.set('skills', allSkills);
+      //   sendResponse({ success: true });
+      //   break;
+      // }
 
-      case 'DELETE_SKILL': {
-        let dSkills = await LocalStorage.get('skills') || [];
-        dSkills = dSkills.filter(s => s.id !== message.skillId);
-        await LocalStorage.set('skills', dSkills);
-        sendResponse({ success: true });
-        break;
-      }
+      // [DISABLED] case 'DELETE_SKILL': {
+      //   let dSkills = await LocalStorage.get('skills') || [];
+      //   dSkills = dSkills.filter(s => s.id !== message.skillId);
+      //   await LocalStorage.set('skills', dSkills);
+      //   sendResponse({ success: true });
+      //   break;
+      // }
 
       case 'SAVE_PROMPT': {
         const newId = crypto.randomUUID();
