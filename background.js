@@ -2,7 +2,6 @@
 console.log(`🔥 [background.js] v${chrome.runtime.getManifest().version} loaded`);
 import { callGeminiWeb, isGeminiWebAvailable } from './lib/gemini-web.js';
 import { SyncStorage, LocalStorage, PromptStorage, migrateLocalToSync, SyncManager } from './lib/storage.js';
-import { GitHubClient } from './lib/github-client.js';
 import { DEFAULT_PROMPTS } from './lib/default-prompts.js';
 import { translations } from './locales.js';
 import { loadPrompt, preloadAllPrompts } from './lib/prompt-loader.js';
@@ -21,8 +20,6 @@ import { generateShareText, shareToSocialPlatform, generateArticleShareText, ART
 import { buildContextMenus, handleContextMenuClick } from './lib/context-menu.js';
 import { initSupabase, initSupabaseFromStorage, isAuthenticated as isSupabaseAuthenticated, from as supabaseFrom, signOut } from './lib/supabase/client.js';
 
-
-const githubClient = new GitHubClient();
 
 // Eagerly preload all prompt files into memory cache at service worker startup
 preloadAllPrompts();
