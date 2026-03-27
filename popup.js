@@ -778,15 +778,15 @@ ${p.sourceContext ? `
     //   document.getElementById('skillFields').classList.toggle('hidden', !e.target.checked);
     // });
 
-    // Knowledge snippets: add button
-    document.getElementById('addSnippetBtn')?.addEventListener('click', () => {
-      this._addSnippetRow();
-    });
+    // [DISABLED] Knowledge snippets: add button
+    // document.getElementById('addSnippetBtn')?.addEventListener('click', () => {
+    //   this._addSnippetRow();
+    // });
 
-    // Knowledge snippets: remove button (delegated)
-    document.getElementById('snippetsList')?.addEventListener('click', (e) => {
-      if (e.target.closest('.snippet-remove')) {
-        e.target.closest('.snippet-item')?.remove();
+    // [DISABLED] Knowledge snippets: remove button (delegated)
+    // document.getElementById('snippetsList')?.addEventListener('click', (e) => {
+    //   if (e.target.closest('.snippet-remove')) {
+    //     e.target.closest('.snippet-item')?.remove();
       }
     });
 
@@ -1541,12 +1541,12 @@ ${p.sourceContext ? `
       this.editingId = prompt.id;
       document.getElementById('historyBtn').classList.remove('hidden');
 
-      // Skill mode fields
-      const isSkill = !!prompt.skillMode;
-      document.getElementById('skillModeToggle').checked = isSkill;
-      document.getElementById('skillFields').classList.toggle('hidden', !isSkill);
-      document.getElementById('systemPromptInput').value = prompt.systemPrompt || '';
-      this._renderSnippets(prompt.knowledgeSnippets || []);
+      // [DISABLED] Skill mode fields
+      // const isSkill = !!prompt.skillMode;
+      // document.getElementById('skillModeToggle').checked = isSkill;
+      // document.getElementById('skillFields').classList.toggle('hidden', !isSkill);
+      // document.getElementById('systemPromptInput').value = prompt.systemPrompt || '';
+      // this._renderSnippets(prompt.knowledgeSnippets || []);
     } else {
       title.textContent = i18n.t('newPrompt');
       document.getElementById('promptForm').reset();
@@ -1554,11 +1554,11 @@ ${p.sourceContext ? `
       this.editingId = null;
       document.getElementById('historyBtn').classList.add('hidden');
 
-      // Reset skill mode
-      document.getElementById('skillModeToggle').checked = false;
-      document.getElementById('skillFields').classList.add('hidden');
-      document.getElementById('systemPromptInput').value = '';
-      this._renderSnippets([]);
+      // [DISABLED] Reset skill mode
+      // document.getElementById('skillModeToggle').checked = false;
+      // document.getElementById('skillFields').classList.add('hidden');
+      // document.getElementById('systemPromptInput').value = '';
+      // this._renderSnippets([]);
     }
 
     modal.classList.remove('hidden');
@@ -1881,11 +1881,11 @@ ${p.sourceContext ? `
       return;
     }
 
-    // Skill mode fields
-    const isSkill = document.getElementById('skillModeToggle').checked;
-    prompt.skillMode = isSkill;
-    prompt.systemPrompt = isSkill ? document.getElementById('systemPromptInput').value.trim() : '';
-    prompt.knowledgeSnippets = isSkill ? this._collectSnippets() : [];
+    // [DISABLED] Skill mode fields
+    // const isSkill = document.getElementById('skillModeToggle').checked;
+    // prompt.skillMode = isSkill;
+    // prompt.systemPrompt = isSkill ? document.getElementById('systemPromptInput').value.trim() : '';
+    // prompt.knowledgeSnippets = isSkill ? this._collectSnippets() : [];
 
     // Instant fallback: use content snippet as title if empty
     // AI extraction happens asynchronously in background after save
@@ -2252,39 +2252,38 @@ ${p.sourceContext ? `
     }
   }
 
-  // --- Skill Mode: Snippet Helpers ---
+  // [DISABLED] --- Skill Mode: Snippet Helpers ---
+  // _renderSnippets(snippets) {
+  //   const list = document.getElementById('snippetsList');
+  //   list.innerHTML = '';
+  //   if (snippets.length === 0) return;
+  //   snippets.forEach(s => this._addSnippetRow(s.title, s.content));
+  // }
 
-  _renderSnippets(snippets) {
-    const list = document.getElementById('snippetsList');
-    list.innerHTML = '';
-    if (snippets.length === 0) return;
-    snippets.forEach(s => this._addSnippetRow(s.title, s.content));
-  }
+  // _addSnippetRow(title = '', content = '') {
+  //   const list = document.getElementById('snippetsList');
+  //   const item = document.createElement('div');
+  //   item.className = 'snippet-item';
+  //   item.innerHTML = `
+  //     <input type="text" class="snippet-title" placeholder="Title" value="${this.escapeHtml(title)}">
+  //     <textarea class="snippet-content" rows="2" placeholder="Reference content...">${this.escapeHtml(content)}</textarea>
+  //     <button type="button" class="snippet-remove" title="Remove">✕</button>
+  //   `;
+  //   list.appendChild(item);
+  // }
 
-  _addSnippetRow(title = '', content = '') {
-    const list = document.getElementById('snippetsList');
-    const item = document.createElement('div');
-    item.className = 'snippet-item';
-    item.innerHTML = `
-      <input type="text" class="snippet-title" placeholder="Title" value="${this.escapeHtml(title)}">
-      <textarea class="snippet-content" rows="2" placeholder="Reference content...">${this.escapeHtml(content)}</textarea>
-      <button type="button" class="snippet-remove" title="Remove">✕</button>
-    `;
-    list.appendChild(item);
-  }
-
-  _collectSnippets() {
-    const items = document.querySelectorAll('#snippetsList .snippet-item');
-    const snippets = [];
-    items.forEach(item => {
-      const title = item.querySelector('.snippet-title')?.value.trim();
-      const content = item.querySelector('.snippet-content')?.value.trim();
-      if (title || content) {
-        snippets.push({ title: title || 'Untitled', content: content || '' });
-      }
-    });
-    return snippets;
-  }
+  // _collectSnippets() {
+  //   const items = document.querySelectorAll('#snippetsList .snippet-item');
+  //   const snippets = [];
+  //   items.forEach(item => {
+  //     const title = item.querySelector('.snippet-title')?.value.trim();
+  //     const content = item.querySelector('.snippet-content')?.value.trim();
+  //     if (title || content) {
+  //       snippets.push({ title: title || 'Untitled', content: content || '' });
+  //     }
+  //   });
+  //   return snippets;
+  // }
 
   async markPromptUsed(id, prompt) {
     await chrome.runtime.sendMessage({ type: 'TRACK_USAGE', id });
@@ -2319,20 +2318,20 @@ ${p.sourceContext ? `
       }
     }
 
-    // Skill mode: prepend system prompt + knowledge snippets
-    if (prompt.skillMode) {
-      const parts = [];
-      if (prompt.systemPrompt) parts.push(prompt.systemPrompt);
-      if (prompt.knowledgeSnippets?.length > 0) {
-        const snippetText = prompt.knowledgeSnippets
-          .map(s => `## ${s.title}\n${s.content}`)
-          .join('\n\n');
-        parts.push('---\n\n# Reference Knowledge\n\n' + snippetText);
-      }
-      if (parts.length > 0) {
-        composedContent = parts.join('\n\n') + '\n\n---\n\n' + composedContent;
-      }
-    }
+    // [DISABLED] Skill mode: prepend system prompt + knowledge snippets
+    // if (prompt.skillMode) {
+    //   const parts = [];
+    //   if (prompt.systemPrompt) parts.push(prompt.systemPrompt);
+    //   if (prompt.knowledgeSnippets?.length > 0) {
+    //     const snippetText = prompt.knowledgeSnippets
+    //       .map(s => `## ${s.title}\n${s.content}`)
+    //       .join('\n\n');
+    //     parts.push('---\n\n# Reference Knowledge\n\n' + snippetText);
+    //   }
+    //   if (parts.length > 0) {
+    //     composedContent = parts.join('\n\n') + '\n\n---\n\n' + composedContent;
+    //   }
+    // }
 
     const composedPrompt = { ...prompt, content: composedContent, variables: composedVars };
 
