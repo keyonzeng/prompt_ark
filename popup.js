@@ -787,8 +787,8 @@ ${p.sourceContext ? `
     // document.getElementById('snippetsList')?.addEventListener('click', (e) => {
     //   if (e.target.closest('.snippet-remove')) {
     //     e.target.closest('.snippet-item')?.remove();
-      }
-    });
+    //   }
+    // });
 
     // Edit modal
     document.getElementById('closeModal').addEventListener('click', () => this.hideEditModal());
