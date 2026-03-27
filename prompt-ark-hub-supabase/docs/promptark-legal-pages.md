@@ -13,7 +13,7 @@ Below are publication-ready Markdown drafts for:
 **PromptArk Privacy Policy**
 
 **Effective Date:** March 25, 2026  
-**Last Updated:** March 25, 2026
+**Last Updated:** March 27, 2026
 
 PromptArk is a product operated by **OOMeta**. The operating entity is **深圳无限元智能网络有限公司** ("OOMeta," "we," "us," or "our"). This Privacy Policy explains how we collect, use, store, disclose, and protect information when users access or use the PromptArk website, Hub, browser extension, and related services (collectively, the "Services").
 
@@ -186,7 +186,9 @@ If you have any questions, privacy requests, or legal notices, you may contact u
 - **Legal:** legal@oometa.ai  
 - **Support:** support@oometa.ai
 
-Website: **https://oometa.ai**
+Product Website: **https://promptark.oometa.ai**
+
+Company Website: **https://oometa.ai**
 
 ---
 
@@ -195,7 +197,7 @@ Website: **https://oometa.ai**
 **PromptArk Terms of Service**
 
 **Effective Date:** March 25, 2026  
-**Last Updated:** March 25, 2026
+**Last Updated:** March 27, 2026
 
 These Terms of Service ("Terms") govern access to and use of the PromptArk website, Hub, browser extension, and related services (collectively, the "Services").
 
@@ -312,7 +314,9 @@ We may update these Terms from time to time. When we do, we will revise the “L
 - **Legal:** legal@oometa.ai  
 - **Support:** support@oometa.ai
 
-Website: **https://oometa.ai**
+Product Website: **https://promptark.oometa.ai**
+
+Company Website: **https://oometa.ai**
 
 ---
 
@@ -339,5 +343,6 @@ Use these as drafting guidance when filling the store listing:
 - The extension does not use collected data for advertising.
 - The extension does not collect analytics or crash-reporting data through third-party analytics or crash tools at this time.
 - Google OAuth is used for account authentication.
-- Privacy policy URL should point to `https://oometa.ai/privacy`.
-
+- Store listing website / homepage should point to `https://promptark.oometa.ai/`.
+- Privacy policy URL should point to `https://promptark.oometa.ai/privacy`.
+- Terms of service URL can point to `https://promptark.oometa.ai/terms` when a platform asks for it.

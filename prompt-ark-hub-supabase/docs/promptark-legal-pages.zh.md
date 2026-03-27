@@ -13,7 +13,7 @@
 **PromptArk 隐私政策**
 
 **生效日期：** 2026 年 3 月 25 日  
-**最后更新：** 2026 年 3 月 25 日
+**最后更新：** 2026 年 3 月 27 日
 
 PromptArk 是由 **OOMeta** 运营的产品。其运营主体为 **深圳无限元智能网络有限公司**（以下简称“OOMeta”“我们”或“本公司”）。本隐私政策说明，当用户访问或使用 PromptArk 网站、Hub、浏览器扩展及相关服务（以下统称“服务”）时，我们如何收集、使用、存储、披露和保护信息。
 
@@ -186,7 +186,9 @@ PromptArk 对从 Google APIs 接收的信息的使用将遵守 **Google API Serv
 - **Legal:** legal@oometa.ai  
 - **Support:** support@oometa.ai
 
-网站：**https://oometa.ai**
+产品网站：**https://promptark.oometa.ai**
+
+公司官网：**https://oometa.ai**
 
 ---
 
@@ -195,7 +197,7 @@ PromptArk 对从 Google APIs 接收的信息的使用将遵守 **Google API Serv
 **PromptArk 服务条款**
 
 **生效日期：** 2026 年 3 月 25 日  
-**最后更新：** 2026 年 3 月 25 日
+**最后更新：** 2026 年 3 月 27 日
 
 本服务条款（以下简称“条款”）适用于对 PromptArk 网站、Hub、浏览器扩展及相关服务（以下统称“服务”）的访问和使用。
 
@@ -312,7 +314,9 @@ PromptArk 提供工具，使用户能够在 Hub 和浏览器扩展体验中创�
 - **Legal:** legal@oometa.ai  
 - **Support:** support@oometa.ai
 
-网站：**https://oometa.ai**
+产品网站：**https://promptark.oometa.ai**
+
+公司官网：**https://oometa.ai**
 
 ---
 
@@ -339,4 +343,6 @@ PromptArk 提供工具，使用户能够在 Hub 和浏览器扩展体验中创�
 - 该扩展不会将收集的数据用于广告。
 - 目前，该扩展不会通过第三方分析或崩溃工具收集分析数据或崩溃报告数据。
 - Google OAuth 用于账户身份验证。
-- 隐私政策 URL 应指向 `https://oometa.ai/privacy`。
+- 商店列表中的 Website / Homepage 建议填写 `https://promptark.oometa.ai/`。
+- 隐私政策 URL 应指向 `https://promptark.oometa.ai/privacy`。
+- 如平台要求服务条款链接，可填写 `https://promptark.oometa.ai/terms`。
