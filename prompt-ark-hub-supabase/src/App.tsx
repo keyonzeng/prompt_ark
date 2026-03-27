@@ -462,8 +462,11 @@ export default function App() {
 function AppShell() {
   const [user, setUser] = useState<any>(null)
   const pathname = normalizePath(window.location.pathname)
-  const isHubRoute = pathname === HUB_PATH
   const legalSection = getLegalSection(pathname)
+  
+  const urlParams = new URLSearchParams(window.location.search)
+  const hasPromptParam = urlParams.get('prompt') || urlParams.get('id')
+  const isHubRoute = pathname === HUB_PATH || hasPromptParam
 
   useEffect(() => {
     if (isHubRoute) {
