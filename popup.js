@@ -1573,12 +1573,13 @@ ${p.sourceContext ? `
     document.getElementById('mdPreview').classList.add('hidden');
     document.getElementById('contentInput').classList.remove('hidden');
     document.getElementById('previewToggle').textContent = i18n.t('preview');
-    // Reset diff panel state
     document.getElementById('optimizeDiffPanel').classList.add('hidden');
     this._originalContent = null;
     this._optimizedContent = null;
     this._optimizeProviderId = null;
     this.editingId = null;
+    this.toggleContractBuilder(false);
+    this.resetContractBuilder();
   }
 
   // --- Prompt Optimization with Diff View ---
@@ -1638,6 +1639,13 @@ ${p.sourceContext ? `
     }
   }
 
+  resetContractBuilder() {
+    document.getElementById('contractFormatSelect').value = '';
+    document.getElementById('contractLengthInput').value = '';
+    document.getElementById('contractToneSelect').value = '';
+    document.getElementById('contractExclusionsInput').value = '';
+  }
+
   insertOutputContract() {
     const format = document.getElementById('contractFormatSelect').value;
     const length = document.getElementById('contractLengthInput').value;
@@ -1693,12 +1701,8 @@ ${p.sourceContext ? `
 
     textarea.value = content + header + lines.join('\n');
 
-    // Reset form & close panel
-    document.getElementById('contractFormatSelect').value = '';
-    document.getElementById('contractLengthInput').value = '';
-    document.getElementById('contractToneSelect').value = '';
-    document.getElementById('contractExclusionsInput').value = '';
     this.toggleContractBuilder(false);
+    this.resetContractBuilder();
 
     this.showToast(i18n.t('ruleToastSuccess'));
   }
