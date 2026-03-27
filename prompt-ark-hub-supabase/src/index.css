@@ -1050,6 +1050,33 @@ body::after {
   justify-content: flex-end;
 }
 
+.landing-github-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.03);
+  transition: all 0.2s;
+}
+
+.landing-github-link:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.landing-github-icon {
+  width: 16px;
+  height: 16px;
+}
+
 .landing-lang-toggle {
   display: inline-flex;
   align-items: center;
@@ -1150,7 +1177,7 @@ body::after {
   line-height: 1.02;
   letter-spacing: -0.04em;
   margin-top: 18px;
-  max-width: 10ch;
+  max-width: 11ch;
 }
 
 .landing-title span {
@@ -1216,6 +1243,25 @@ body::after {
   font-size: 13px;
 }
 
+.landing-proof-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.landing-proof-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .landing-panel {
   border-radius: 28px;
   padding: 28px;
@@ -1276,12 +1322,49 @@ body::after {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
-  margin-top: 20px;
+  margin-top: 18px;
 }
 
 .landing-feature-card {
   border-radius: 22px;
   padding: 24px;
+  min-height: 196px;
+}
+
+.landing-section-head {
+  margin-top: 26px;
+}
+
+.landing-section-head--compact {
+  margin-top: 0;
+}
+
+.landing-section-kicker {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.landing-section-title {
+  margin-top: 14px;
+  font-size: clamp(28px, 4vw, 40px);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+
+.landing-section-text {
+  margin-top: 12px;
+  max-width: 72ch;
+  color: var(--text-secondary);
+  font-size: 15px;
+  line-height: 1.7;
 }
 
 .landing-feature-card h3 {
@@ -1294,6 +1377,55 @@ body::after {
   font-size: 14px;
   line-height: 1.6;
   color: var(--text-secondary);
+}
+
+.landing-workflow-section {
+  margin-top: 22px;
+  padding: 28px;
+  border-radius: 28px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.015));
+  border: 1px solid var(--border);
+}
+
+.landing-workflow-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.landing-workflow-card {
+  padding: 20px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.landing-workflow-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.landing-workflow-card h3 {
+  margin-top: 16px;
+  font-size: 18px;
+}
+
+.landing-workflow-card p {
+  margin-top: 10px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 .landing-platform-strip {
@@ -1340,7 +1472,8 @@ body::after {
 /* ===== Responsive ===== */
 @media (max-width: 960px) {
   .landing-hero,
-  .landing-feature-grid {
+  .landing-feature-grid,
+  .landing-workflow-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1373,7 +1506,8 @@ body::after {
   }
   .landing-copy,
   .landing-panel,
-  .landing-feature-card {
+  .landing-feature-card,
+  .landing-workflow-section {
     padding: 22px;
   }
   .landing-title {
@@ -1387,6 +1521,7 @@ body::after {
   }
   .landing-primary-btn,
   .landing-secondary-btn,
+  .landing-github-link,
   .landing-nav-link,
   .landing-lang-toggle {
     width: 100%;
