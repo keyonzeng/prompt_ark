@@ -1026,17 +1026,14 @@ async function handleMessage(message, sendResponse) {
         const syncKeys = [
           'sync_backend', 'gist_id', 'webdavUrl', 'webdavUser', 'webdavPassword',
           'obsidianWebdavUrl', 'obsidianWebdavUser', 'obsidianWebdavPassword',
-          'obsidianFolder', 'obsidianLocalPort', 'obsidianLocalApiKey'
+          'obsidianFolder'
         ];
-        const defaults = { sync_backend: 'none', obsidianFolder: 'prompts', obsidianLocalPort: 27123 };
+        const defaults = { sync_backend: 'none', obsidianFolder: 'prompts' };
         const values = await Promise.all(syncKeys.map(k => LocalStorage.get(k)));
         const settings = Object.fromEntries(syncKeys.map((k, i) => {
           const camel = k.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
           return [camel, values[i] || defaults[k] || ''];
         }));
-        if (settings.obsidianLocalApiKey) {
-          settings.obsidianLocalApiKey = await decrypt(settings.obsidianLocalApiKey);
-        }
         sendResponse({ success: true, ...settings });
         break;
       }
@@ -1053,12 +1050,6 @@ async function handleMessage(message, sendResponse) {
         if (message.obsidianWebdavUser !== undefined) await LocalStorage.set('obsidianWebdavUser', message.obsidianWebdavUser);
         if (message.obsidianWebdavPassword !== undefined) await LocalStorage.set('obsidianWebdavPassword', message.obsidianWebdavPassword);
         if (message.obsidianFolder !== undefined) await LocalStorage.set('obsidianFolder', message.obsidianFolder);
-
-        if (message.obsidianLocalPort !== undefined) await LocalStorage.set('obsidianLocalPort', message.obsidianLocalPort);
-        if (message.obsidianLocalApiKey !== undefined) {
-          const encObsKey = message.obsidianLocalApiKey ? await encrypt(message.obsidianLocalApiKey) : '';
-          await LocalStorage.set('obsidianLocalApiKey', encObsKey);
-        }
 
         await SyncManager.loadConfig();
         sendResponse({ success: true });
@@ -1084,13 +1075,11 @@ async function handleMessage(message, sendResponse) {
 
       case 'FORCE_GIST_SYNC':
       case 'FORCE_WEBDAV_SYNC':
-      case 'FORCE_OBSIDIAN_SYNC':
-      case 'FORCE_OBSIDIAN_LOCAL_SYNC': {
+      case 'FORCE_OBSIDIAN_SYNC': {
         const syncMethods = {
           FORCE_GIST_SYNC: 'pullFromGistAndMerge',
           FORCE_WEBDAV_SYNC: 'pullFromWebdavAndMerge',
           FORCE_OBSIDIAN_SYNC: 'pullFromObsidianAndMerge',
-          FORCE_OBSIDIAN_LOCAL_SYNC: 'pullFromObsidianLocalAndMerge',
         };
         try {
           const result = await SyncManager[syncMethods[message.type]]();

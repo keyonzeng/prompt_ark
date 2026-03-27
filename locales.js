@@ -189,20 +189,8 @@ export const translations = {
         MSG_OBSIDIAN_SYNC_SUCCESS: "Obsidian Vault 同步成功！",
         MSG_OBSIDIAN_EMPTY_PUSHED:
             "Vault 文件夹为空，已将本地 Prompt 推送到 Vault。",
-        obsidianLocalSync: "Obsidian Local",
-        obsidianLocalTitle: "Obsidian Local (Plugin)",
-        obsidianLocalHint:
-            "在 Obsidian 中安装 prompt-ark-sync 插件，通过 localhost 零配置同步",
         obsidianSyncCategory: "Obsidian 集成",
         obsidianSyncCategoryHint: "将 Obsidian Vault 作为 Prompt 仓库",
-        obsidianLocalPort: "端口",
-        obsidianLocalApiKey: "API Key（可选）",
-        forceSyncObsidianLocal: "立刻同步",
-        testConnection: "测试连接",
-        ERR_OBSIDIAN_LOCAL_NOT_ENABLED: "未开启 Obsidian Local 同步",
-        ERR_OBSIDIAN_LOCAL_OFFLINE:
-            "无法连接 Obsidian 插件，请确认 Obsidian 已打开且插件已启用",
-        ERR_OBSIDIAN_LOCAL_FETCH_FAILED: "从 Obsidian 获取 Prompt 失败",
         tabGeneral: "⚙️ 常规",
         tabModels: "🧠 模型",
         tabSync: "☁️ 同步",
@@ -505,22 +493,9 @@ export const translations = {
         MSG_OBSIDIAN_SYNC_SUCCESS: "Obsidian Vault synced successfully!",
         MSG_OBSIDIAN_EMPTY_PUSHED:
             "Vault folder was empty. Local prompts pushed to Vault.",
-        obsidianLocalSync: "Obsidian Local",
-        obsidianLocalTitle: "Obsidian Local (Plugin)",
-        obsidianLocalHint:
-            "Install prompt-ark-sync plugin in Obsidian for zero-config sync via localhost",
         obsidianSyncCategory: "Obsidian Integration",
         obsidianSyncCategoryHint:
             "Use your Obsidian Vault as a Prompt repository",
-        obsidianLocalPort: "Port",
-        obsidianLocalApiKey: "API Key (optional)",
-        forceSyncObsidianLocal: "Sync Now",
-        testConnection: "Test Connection",
-        ERR_OBSIDIAN_LOCAL_NOT_ENABLED: "Obsidian Local sync not enabled",
-        ERR_OBSIDIAN_LOCAL_OFFLINE:
-            "Cannot reach Obsidian plugin. Make sure Obsidian is open and plugin is enabled.",
-        ERR_OBSIDIAN_LOCAL_FETCH_FAILED:
-            "Failed to fetch prompts from Obsidian",
         tabGeneral: "⚙️ General",
         tabModels: "🧠 Models",
         tabSync: "☁️ Sync",

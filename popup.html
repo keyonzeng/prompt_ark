@@ -368,7 +368,6 @@
               <option value="gist" data-i18n="gistSync">GitHub Gist</option>
               <option value="webdav" data-i18n="webdavSync">WebDAV</option>
               <option value="obsidian" data-i18n="obsidianSync">Obsidian Vault (WebDAV)</option>
-              <option value="obsidian-local" data-i18n="obsidianLocalSync">Obsidian Local (Plugin)</option>
             </select>
             <!-- Sync Status Indicator -->
             <div id="syncStatusIndicator" class="sync-status-indicator hidden">
@@ -429,24 +428,6 @@
             <div class="settings-actions">
               <button id="forceSyncObsidianBtn" class="btn btn-secondary btn-small" data-i18n="forceSyncObsidian">立刻同步
                 Obsidian</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Obsidian Local (Plugin) Config -->
-        <div class="settings-card sync-config-panel hidden" id="obsidianLocalContainer">
-          <div class="settings-group-vertical">
-            <label data-i18n="obsidianLocalPort">端口</label>
-            <input type="number" id="obsidianLocalPortInput" class="settings-input" placeholder="27123" value="27123">
-            <label data-i18n="obsidianLocalApiKey">API Key (optional)</label>
-            <input type="password" id="obsidianLocalApiKeyInput" class="settings-input"
-              placeholder="Leave empty for no auth">
-            <div id="obsidianLocalStatus" class="settings-hint"></div>
-            <div class="settings-actions">
-              <button id="testObsidianLocalBtn" class="btn btn-secondary btn-small"
-                data-i18n="testConnection">测试连接</button>
-              <button id="forceSyncObsidianLocalBtn" class="btn btn-secondary btn-small"
-                data-i18n="forceSyncObsidianLocal">立刻同步</button>
             </div>
           </div>
         </div>

@@ -211,12 +211,6 @@ class PopupManager {
     const obsidianFolderInput = document.getElementById('obsidianFolderInput');
     if (obsidianFolderInput) obsidianFolderInput.value = syncResp.obsidianFolder || 'prompts';
 
-    // Obsidian Local settings
-    const obsidianLocalPortInput = document.getElementById('obsidianLocalPortInput');
-    if (obsidianLocalPortInput) obsidianLocalPortInput.value = syncResp.obsidianLocalPort || 27123;
-    const obsidianLocalApiKeyInput = document.getElementById('obsidianLocalApiKeyInput');
-    if (obsidianLocalApiKeyInput && syncResp.obsidianLocalApiKey) obsidianLocalApiKeyInput.value = syncResp.obsidianLocalApiKey;
-
     this.toggleSyncUI(syncResp.syncBackend);
     
     // Load Image Prompt settings
@@ -234,7 +228,6 @@ class PopupManager {
     if (backend === 'gist') document.getElementById('gistIdContainer')?.classList.remove('hidden');
     if (backend === 'webdav') document.getElementById('webdavContainer')?.classList.remove('hidden');
     if (backend === 'obsidian') document.getElementById('obsidianContainer')?.classList.remove('hidden');
-    if (backend === 'obsidian-local') document.getElementById('obsidianLocalContainer')?.classList.remove('hidden');
 
     const indicator = document.getElementById('syncStatusIndicator');
     if (indicator) {
@@ -348,9 +341,7 @@ class PopupManager {
       obsidianWebdavUrl,
       obsidianWebdavUser,
       obsidianWebdavPassword,
-      obsidianFolder,
-      obsidianLocalPort: parseInt(document.getElementById('obsidianLocalPortInput')?.value) || 27123,
-      obsidianLocalApiKey: document.getElementById('obsidianLocalApiKeyInput')?.value?.trim() || ''
+      obsidianFolder
     });
 
     // Reset sync status when backend changes
@@ -1137,61 +1128,6 @@ ${p.sourceContext ? `
 
         if (resp.success) {
           this.showToast(i18n.t(resp.message) || resp.message || 'Obsidian Vault Sync Successful');
-          await this.loadPrompts();
-          this.currentPage = 1;
-          this.renderCategories();
-          this.renderPrompts();
-        } else {
-          const errorKey = resp.error || 'Unknown';
-          const errorMsg = i18n.t(errorKey) || errorKey;
-          this.showToast('❌ ' + errorMsg, 4000);
-        }
-      } catch (err) {
-        btn.textContent = originalText;
-        btn.disabled = false;
-        this.showToast('❌ ' + err.message, 4000);
-      }
-    });
-
-    // Obsidian Local: Test Connection
-    document.getElementById('testObsidianLocalBtn')?.addEventListener('click', async () => {
-      const port = document.getElementById('obsidianLocalPortInput')?.value || 27123;
-      const apiKey = document.getElementById('obsidianLocalApiKeyInput')?.value?.trim() || '';
-      const statusEl = document.getElementById('obsidianLocalStatus');
-
-      try {
-        const headers = {};
-        if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
-
-        const resp = await fetch(`http://127.0.0.1:${port}/prompt-ark/health`, { headers });
-        const data = await resp.json();
-
-        if (data.status === 'ok') {
-          if (statusEl) statusEl.innerHTML = `🟢 Connected — Vault: <strong>${data.vault}</strong>, Folder: <code>${data.promptFolder}</code>`;
-          this.showToast('✅ Obsidian plugin connected!');
-        } else {
-          if (statusEl) statusEl.textContent = '🔴 Unexpected response';
-        }
-      } catch (e) {
-        if (statusEl) statusEl.textContent = '🔴 Cannot reach Obsidian plugin. Is it running?';
-        this.showToast('❌ Cannot reach Obsidian plugin', 4000);
-      }
-    });
-
-    // Obsidian Local: Force Sync
-    document.getElementById('forceSyncObsidianLocalBtn')?.addEventListener('click', async (e) => {
-      const btn = e.target;
-      const originalText = btn.textContent;
-      btn.textContent = 'Syncing...';
-      btn.disabled = true;
-
-      try {
-        const resp = await chrome.runtime.sendMessage({ type: 'FORCE_OBSIDIAN_LOCAL_SYNC' });
-        btn.textContent = originalText;
-        btn.disabled = false;
-
-        if (resp.success) {
-          this.showToast(i18n.t(resp.message) || resp.message || 'Obsidian Local Sync Successful');
           await this.loadPrompts();
           this.currentPage = 1;
           this.renderCategories();
