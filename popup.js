@@ -57,13 +57,6 @@ class PopupManager {
       }
     });
 
-    // Listen for sync status changes
-    chrome.runtime.onMessage.addListener((msg) => {
-      if (msg.type === 'SYNC_STATUS_CHANGED') {
-        this.renderSyncStatus(msg.status);
-      }
-    });
-
     // Real-time usage updates from background (for most-used / recent-used filters)
     chrome.runtime.onMessage.addListener((msg) => {
       if (msg.type !== 'PROMPT_USAGE_UPDATED' || !msg.prompt?.id) return;
@@ -191,9 +184,6 @@ class PopupManager {
     const syncSelect = document.getElementById('syncBackendSelect');
     if (syncSelect) syncSelect.value = syncResp.syncBackend || 'none';
 
-    const gistIdInput = document.getElementById('gistIdInput');
-    if (gistIdInput && syncResp.gistId) gistIdInput.value = syncResp.gistId;
-
     const webdavUrlInput = document.getElementById('webdavUrlInput');
     if (webdavUrlInput && syncResp.webdavUrl) webdavUrlInput.value = syncResp.webdavUrl;
     const webdavUserInput = document.getElementById('webdavUserInput');
@@ -225,72 +215,8 @@ class PopupManager {
   toggleSyncUI(backend) {
     document.querySelectorAll('.sync-config-panel').forEach(el => el.classList.add('hidden'));
     if (backend === 'chrome') document.getElementById('chromeSyncContainer')?.classList.remove('hidden');
-    if (backend === 'gist') document.getElementById('gistIdContainer')?.classList.remove('hidden');
     if (backend === 'webdav') document.getElementById('webdavContainer')?.classList.remove('hidden');
     if (backend === 'obsidian') document.getElementById('obsidianContainer')?.classList.remove('hidden');
-
-    const indicator = document.getElementById('syncStatusIndicator');
-    if (indicator) {
-      if (backend === 'none') {
-        indicator.classList.add('hidden');
-      } else {
-        indicator.classList.remove('hidden');
-        this.loadSyncStatus();
-      }
-    }
-  }
-
-  async loadSyncStatus() {
-    const result = await chrome.storage.local.get('syncStatus');
-    this.renderSyncStatus(result.syncStatus);
-  }
-
-  renderSyncStatus(status) {
-    const indicator = document.getElementById('syncStatusIndicator');
-    const textEl = document.getElementById('syncStatusText');
-    if (!indicator || !textEl) return;
-
-    const backend = document.getElementById('syncBackendSelect')?.value;
-    if (backend === 'none') {
-      indicator.classList.add('hidden');
-      return;
-    }
-    indicator.classList.remove('hidden');
-
-    if (!status || status.state === 'idle') {
-      textEl.textContent = '○ 未同步';
-      return;
-    }
-
-    if (status.state === 'syncing') {
-      textEl.textContent = '◐ 同步中...';
-      return;
-    }
-
-    if (status.state === 'synced' && status.lastSyncTime) {
-      const ago = this.getRelativeTime(status.lastSyncTime);
-      textEl.textContent = `● 已同步 (${ago})`;
-      return;
-    }
-
-    if (status.state === 'failed') {
-      textEl.textContent = '● 同步失败';
-      return;
-    }
-
-    textEl.textContent = '○ 未同步';
-  }
-
-  getRelativeTime(timestamp) {
-    const diff = Date.now() - timestamp;
-    const seconds = Math.floor(diff / 1000);
-    if (seconds < 60) return '刚刚';
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes} 分钟前`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours} 小时前`;
-    const days = Math.floor(hours / 24);
-    return `${days} 天前`;
   }
 
   async saveSettings() {
@@ -320,7 +246,6 @@ class PopupManager {
 
     // Save Sync Settings
     const syncBackend = document.getElementById('syncBackendSelect')?.value || 'none';
-    const gistId = document.getElementById('gistIdInput')?.value?.trim() || '';
     const webdavUrl = document.getElementById('webdavUrlInput')?.value?.trim() || '';
     const webdavUser = document.getElementById('webdavUserInput')?.value?.trim() || '';
     const webdavPassword = document.getElementById('webdavPasswordInput')?.value?.trim() || '';
@@ -334,7 +259,6 @@ class PopupManager {
     await chrome.runtime.sendMessage({
       type: 'SAVE_SYNC_SETTINGS',
       backend: syncBackend,
-      gistId: gistId,
       webdavUrl,
       webdavUser,
       webdavPassword,
@@ -343,12 +267,6 @@ class PopupManager {
       obsidianWebdavPassword,
       obsidianFolder
     });
-
-    // Reset sync status when backend changes
-    await chrome.storage.local.set({
-      syncStatus: { state: 'idle', backend: syncBackend }
-    });
-    this.renderSyncStatus({ state: 'idle', backend: syncBackend });
     
     // Save Image Prompt settings
     const imagePromptEnabled = document.getElementById('imagePromptEnabled')?.checked || false;
@@ -1056,30 +974,6 @@ ${p.sourceContext ? `
 
       if (resp.success) {
         this.showToast(i18n.t(resp.message) || resp.message || 'Chrome Sync Successful');
-        await this.loadPrompts();
-        this.currentPage = 1;
-        this.renderCategories();
-        this.renderPrompts();
-      } else {
-        const errorKey = resp.error || 'Unknown';
-        const errorMsg = i18n.t(errorKey) || errorKey;
-        this.showToast('❌ ' + errorMsg, 4000);
-      }
-    });
-
-    document.getElementById('forceSyncGistBtn')?.addEventListener('click', async (e) => {
-      const btn = e.target;
-      const originalText = btn.textContent;
-      btn.textContent = 'Syncing...';
-      btn.disabled = true;
-
-      const resp = await chrome.runtime.sendMessage({ type: 'FORCE_GIST_SYNC' });
-
-      btn.textContent = originalText;
-      btn.disabled = false;
-
-      if (resp.success) {
-        this.showToast(i18n.t(resp.message) || resp.message || 'Gist Sync Successful');
         await this.loadPrompts();
         this.currentPage = 1;
         this.renderCategories();
@@ -2693,21 +2587,7 @@ ${p.sourceContext ? `
       // Check if it's a GitHub URL
       const ghInfo = this.githubClient.parseUrl(url);
 
-      // Check if it's a Gist URL
-      const gistInfo = this.githubClient.parseGistUrl(url);
-
-      if (gistInfo.isGist) {
-        statusEl.textContent = 'Fetching Gist...';
-        let content;
-        if (gistInfo.rawUrl) {
-          const resp = await fetch(gistInfo.rawUrl);
-          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-          content = await resp.text();
-        } else {
-          content = await this.githubClient.fetchGistContent(gistInfo.gistId);
-        }
-        files = [{ path: 'gist.json', content, url }];
-      } else if (ghInfo) {
+      if (ghInfo) {
         files = await this.githubClient.scanRecursively(url, (msg) => {
           statusEl.textContent = msg;
         }, deepScan);
@@ -2718,7 +2598,6 @@ ${p.sourceContext ? `
         const text = await response.text();
         files = [{ path: 'url', content: text, url: url }];
       }
-
       if (files.length === 0) throw new Error('No supported files found.');
 
       // Phase 1: Parse files into raw prompts (heuristic scored)

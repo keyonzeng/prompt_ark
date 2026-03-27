@@ -1024,7 +1024,7 @@ async function handleMessage(message, sendResponse) {
 
       case 'GET_SYNC_SETTINGS': {
         const syncKeys = [
-          'sync_backend', 'gist_id', 'webdavUrl', 'webdavUser', 'webdavPassword',
+          'sync_backend', 'webdavUrl', 'webdavUser', 'webdavPassword',
           'obsidianWebdavUrl', 'obsidianWebdavUser', 'obsidianWebdavPassword',
           'obsidianFolder'
         ];
@@ -1040,7 +1040,6 @@ async function handleMessage(message, sendResponse) {
 
       case 'SAVE_SYNC_SETTINGS': {
         await LocalStorage.set('sync_backend', message.backend);
-        await LocalStorage.set('gist_id', message.gistId);
 
         if (message.webdavUrl !== undefined) await LocalStorage.set('webdavUrl', message.webdavUrl);
         if (message.webdavUser !== undefined) await LocalStorage.set('webdavUser', message.webdavUser);
@@ -1057,27 +1056,21 @@ async function handleMessage(message, sendResponse) {
       }
 
       case 'FORCE_CHROME_SYNC': {
-        const { updateSyncStatus } = await import('./lib/storage.js');
-        await updateSyncStatus('syncing');
         try {
           // Read from chrome.storage.sync and merge to local
           const { PromptStorage } = await import('./lib/storage.js');
           const prompts = await PromptStorage.get();
           await chrome.storage.local.set({ prompts });
-          await updateSyncStatus('synced');
           sendResponse({ success: true, message: 'MSG_SYNC_SUCCESS' });
         } catch (e) {
-          await updateSyncStatus('failed', e.message);
           sendResponse({ success: false, error: e.message });
         }
         break;
       }
 
-      case 'FORCE_GIST_SYNC':
       case 'FORCE_WEBDAV_SYNC':
       case 'FORCE_OBSIDIAN_SYNC': {
         const syncMethods = {
-          FORCE_GIST_SYNC: 'pullFromGistAndMerge',
           FORCE_WEBDAV_SYNC: 'pullFromWebdavAndMerge',
           FORCE_OBSIDIAN_SYNC: 'pullFromObsidianAndMerge',
         };

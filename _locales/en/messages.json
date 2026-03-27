@@ -156,7 +156,7 @@
     "message": "e.g. jargon, apologies, disclaimers"
   },
   "imagePromptFeature": {
-    "message": "🖼️ Image-to-Prompt (Beta)"
+    "message": "🖼️ Image-to-Prompt"
   },
   "imagePromptFeatureHint": {
     "message": "Hover over web images to generate AI image prompts"

@@ -156,7 +156,7 @@
     "message": "如：术语、套话、免责声明"
   },
   "imagePromptFeature": {
-    "message": "🖼️ 图像生成提示词（Beta）"
+    "message": "🖼️ 图像生成提示词"
   },
   "imagePromptFeatureHint": {
     "message": "悬停网页图片生成 AI 图像提示词"
